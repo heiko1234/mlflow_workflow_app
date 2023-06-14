@@ -47,7 +47,12 @@ sidebar = html.Div(
             dcc.Markdown("\n---\n")
         ),
         icon_and_text(id="side_home", text="Home", icon="home", href=url_base_pathname+dash.page_registry['pages.home']['path']),
-        icon_and_text(id="side_landing", text="Landing", icon="update", href=url_base_pathname+dash.page_registry['pages.landing.landing']['path']),
+        icon_and_text(id="side_landing", text="Start", icon="get_started", href=url_base_pathname+dash.page_registry['pages.landing.landing']['path']),
+        icon_and_text(id="side_data", text="Data", icon="data", href=url_base_pathname+dash.page_registry['pages.dataload.dataload']['path']),
+        icon_and_text(id="side_analysis", text="Analysis", icon="analysis3", href=url_base_pathname+dash.page_registry['pages.analysis.analysis']['path']),
+        icon_and_text(id="side_model", text="Modelling", icon="gauche", href=url_base_pathname+dash.page_registry['pages.model.model']['path']),
+        icon_and_text(id="side_validate", text="Validation", icon="analysis5", href=url_base_pathname+dash.page_registry['pages.validation.validation']['path']),
+        icon_and_text(id="side_evalidate", text="Evalidation", icon="analysis6", href=url_base_pathname+dash.page_registry['pages.evaluation.evaluation']['path']),
         # icon_and_text(id="side_data", text="Data", icon="analysis1", href=url_base_pathname+dash.page_registry['pages.data']['path']),
         # icon_and_text(id="side_increase", text="Benefit", icon="increase", href=url_base_pathname+dash.page_registry['pages.increase']['path']),
     ],
