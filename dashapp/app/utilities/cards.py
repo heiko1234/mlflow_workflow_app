@@ -105,3 +105,28 @@ def home_card(
 
 
 
+def standard_card(
+        id,
+        header_text,
+        content,
+        height,
+        width
+):
+    output = html.Div(
+        className="stdc",
+        id=id,
+        children=[
+            html.Div(
+                className="stdc_content",
+                children=[
+                    html.H3(header_text),
+                    dcc.Markdown("\n---\n"),
+                    html.Div(
+                        dcc.Loading(*content)
+                    )
+                ]
+            )
+        ],
+        style={"height": height, "width": width}
+    )
+    return output
