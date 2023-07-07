@@ -30,24 +30,70 @@ layout = html.Div(
         # html.Div(children='''
         #     This is our landing page content.
         #     '''),
-        standard_card(id="collectcard", header_text="Project Infos", content=[html.Div(children=[
+        standard_card(id="collectcard", header_text="General Project Infos", content=[
             html.Div(
                 children=[
-                    standard_card(id="namecard", header_text="Name", content=[dcc.Input(type="text", id="i_name")], height="100px", width="250px"),
-                    # standard_card(id="projectcard", header_text="Projectname", content=[dcc.Input(type="text", id="i_projectname")], height="100px", width="250px"),
-                    form_card(id="projectcard", header_text="Projectname", height="100px", width="450px")
-                    ], style={"display": "flex"}
-                ),
-            html.Div(
-                children=[
-                    standard_card(id="organizationcard", header_text="Organization", content=[dcc.Input(type="text", id="i_organization")], height="100px", width="250px"),
-                    standard_card(id="testcard", header_text="Dummyname", content=[dcc.Input(type="text", id="i_dummy")], height="100px", width="250px")
-                    ], style={"display": "flex"}
-                ),
-            ],)],
-            height="600px",
-            width="600px"
-        )
+                    html.Div(
+                        children=[
+                            html.Div(
+                                children=[
+                                    html.H3("Projectname", style={"margin": "10px", "width": "200px"}),
+                                    dcc.Input(type="text", id="i_projectname", style={"margin": "10px", "width": "200px"})
+                                ],
+                                style={
+                                    "display": "flex",
+                                    "justify-content": "center",
+                                    "margin": "20px",
+                                    }
+                            ),
+                            html.Div(
+                                children=[
+                                    html.H3("Organization", style={"margin": "10px", "width": "200px"}),
+                                    dcc.Input(type="text", id="i_organization", style={"margin": "10px", "width": "200px"})
+                                ],
+                                style={
+                                    "display": "flex",
+                                    "justify-content": "center",
+                                    "margin": "20px",
+                                    }
+                            ),
+                            html.Div(
+                                children=[
+                                    html.H3("Name", style={"margin": "10px", "width": "200px"}),
+                                    dcc.Input(type="text", id="i_name", style={"margin": "10px", "width": "200px"})
+                                ],
+                                style={
+                                    "display": "flex",
+                                    "justify-content": "center",
+                                    "margin": "20px",
+                                    }
+                            ),
+                            # create a button to submit the form
+                            html.Div(
+                                children=[
+                                    html.Button('Submit', id='submit-val', n_clicks=0, style={
+                                        "width": "300px",
+                                        "height": "50px",
+                                        "margin": "20px"
+                                        }
+                                    )
+                                ],
+                                style={
+                                    "display": "flex",
+                                    "justify-content": "center",
+                                    "margin": "20px",
+                                }
+                            ),
+                        ],
+                        style={
+                            "display": "block",
+                            "justify-content": "center",
+                        }
+                )],
+            )
+        ],
+        height="400px",
+        width="600px")
     ])
 
 
