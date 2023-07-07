@@ -130,3 +130,29 @@ def standard_card(
         style={"height": height, "width": width}
     )
     return output
+
+# create function to create a html div card for a form where description of the manual input is side by side to the input
+
+def form_card(
+        id,
+        header_text,
+        height,
+        width
+):
+    output = html.Div(
+        className="fc",
+        id=id,
+        children=[
+            html.Div(
+                className="fc_content",
+                children=[
+                    html.H3(header_text),
+                    dcc.Input(id=f"{id}_input", type="text", placeholder="Enter a value..."),
+                ]
+            )
+        ],
+        style={"height": height, "width": width}
+    )
+    return output
+
+
