@@ -96,4 +96,17 @@ layout = html.Div(
     ])
 
 
+# dash callback to bring all landing page text inputs to project_basic_session_store
+
+@dash.callback(
+    Output('project_basic_session_store', 'data'),
+    Input('submit-val', 'n_clicks'),
+    State('i_projectname', 'value'),
+    State('i_organization', 'value'),
+    State('i_project_manager_name', 'value'),
+    prevent_initial_call=True
+)
+def update_project_basic_session_store(n_clicks, projectname, organization, project_manager_name):
+    output = {"projectname": projectname, "organization": organization, "project_manager_name": project_manager_name}
+    return output
 
