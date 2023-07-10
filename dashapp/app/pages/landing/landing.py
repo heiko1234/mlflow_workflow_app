@@ -38,7 +38,7 @@ layout = html.Div(
                             html.Div(
                                 children=[
                                     html.H3("Projectname", style={"margin": "10px", "width": "200px"}),
-                                    dcc.Input(type="text", id="i_projectname", style={"margin": "10px", "width": "200px"})
+                                    dcc.Input(type="text", className="text_input", id="i_projectname")
                                 ],
                                 style={
                                     "display": "flex",
@@ -49,7 +49,7 @@ layout = html.Div(
                             html.Div(
                                 children=[
                                     html.H3("Organization", style={"margin": "10px", "width": "200px"}),
-                                    dcc.Input(type="text", id="i_organization", style={"margin": "10px", "width": "200px"})
+                                    dcc.Input(type="text", className="text_input", id="i_organization")
                                 ],
                                 style={
                                     "display": "flex",
@@ -59,8 +59,8 @@ layout = html.Div(
                             ),
                             html.Div(
                                 children=[
-                                    html.H3("Name", style={"margin": "10px", "width": "200px"}),
-                                    dcc.Input(type="text", id="i_name", style={"margin": "10px", "width": "200px"})
+                                    html.H3("Project Manager", style={"margin": "10px", "width": "200px"}),
+                                    dcc.Input(type="text", className="text_input", id="i_project_manager_name")
                                 ],
                                 style={
                                     "display": "flex",
