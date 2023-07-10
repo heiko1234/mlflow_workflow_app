@@ -71,11 +71,10 @@ layout = html.Div(
                             # create a button to submit the form
                             html.Div(
                                 children=[
-                                    html.Button('Submit', id='submit-val', n_clicks=0, style={
-                                        "width": "300px",
-                                        "height": "50px",
-                                        "margin": "20px"
-                                        }
+                                    html.Button('Submit',
+                                        className="submit_button",
+                                        id='submit-val',
+                                        n_clicks=0,
                                     )
                                 ],
                                 style={
