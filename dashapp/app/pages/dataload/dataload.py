@@ -7,10 +7,20 @@ import io
 
 import pandas as pd
 
+from upath import UPath
+
 import dash
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from dash import dash_table
+
+from app.utilities.cards import (
+    standard_card,
+    form_card
+)
+
+
+
 
 dash.register_page(__name__,"/dataload")
 
@@ -78,13 +88,16 @@ layout = html.Div(
             Choose your data source.
             '''),
         html.H1(),
-        html.Div([
-            dcc.Tabs(id='data_tabs', value='tab_data_upload', children=[
-                dcc.Tab(label='File Usage', value='tab_data_upload'),
-                dcc.Tab(label='Blobstorage Usage', value='tab_data_load'),
+        html.Div(
+            id="data_tabs_div",
+            children=
+                [
+                dcc.Tabs(id='data_tabs', value='tab_data_upload', children=[
+                    dcc.Tab(label='File Usage', value='tab_data_upload'),
+                    dcc.Tab(label='Blobstorage Usage', value='tab_data_load'),
+                ]),
+                html.Div(id='data_tabs_content'),
             ]),
-            html.Div(id='data_tabs_content'),
-        ]),
     ]
 )
 
@@ -99,7 +112,7 @@ tab_data_upload = html.Div([
                 html.A("Select File")
             ]),
             style={
-                "width": "25%",
+                "width": "250px",
                 "height": "120px",
                 "lineHeight": "60px",
                 "borderWidth": "1px",
@@ -113,205 +126,57 @@ tab_data_upload = html.Div([
         ),
         html.Div(id="output_data_upload")
     ])
-])
+], style={"display": "flex", "justify-content": "center"}
+)
 
-# create the content of the tab_data_load, with a from to give basic information to chose a file from the blob storage and load it
 
-tab_data_load = html.Div([
-    html.Div([
-        html.Div([
-            html.Div([
-                html.Label("Container Name"),
-                dcc.Input(
-                    id="container_name",
-                    type="text",
-                    placeholder="Container Name",
-                    value="data"
-                ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("File Name"),
-                dcc.Input(
-                    id="file_name",
-                    type="text",
-                    placeholder="File Name",
-                    value="data.csv"
-                ),
-            ], className="six columns"),
-        ], className="row"),
-        html.Div([
-            html.Div([
-                html.Label("Account Name"),
-                dcc.Input(
-                    id="account_name",
-                    type="text",
-                    placeholder="Account Name",
-                    value="data"
-                ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("Account Key"),
-                dcc.Input(
-                    id="account_key",
-                    type="text",
-                    placeholder="Account Key",
-                    value="data"
-                ),
-            ], className="six columns"),
-        ], className="row"),
-        html.Div([
-            html.Div([
-                html.Label("SAS Token"),
-                dcc.Input(
-                    id="sas_token",
-                    type="text",
-                    placeholder="SAS Token",
-                    value="data"
-                ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("File Path"),
-                dcc.Input(
-                    id="file_path",
-                    type="text",
-                    placeholder="File Path",
-                    value="data"
-                ),
-            ], className="six columns"),
-        ], className="row"),
-        html.Div([
-            html.Div([
-                html.Label("File Type"),
-                dcc.Dropdown(
-                    id="file_type",
-                    options=[
-                        {'label': 'csv', 'value': 'csv'},
-                        {'label': 'xls', 'value': 'xls'},
-                        {'label': 'parquet', 'value': 'parquet'},
+tab_data_load = html.Div(
+    id="blobdata_loading_div",
+    children=[
+        html.Div(
+            id="blobdata_loading_subdiv",
+            children=[
+                standard_card(
+                    id="blobdatacard",
+                    header_text="Blob Data Access",
+                    content=[
+                        html.Div([
+                            html.Div([
+                                html.H3("Blobstorage Environment", style={"margin": "10px", "width": "300px"}),
+                                dcc.Dropdown(
+                                    id="blobstorage_environment",
+                                    style={"width": "400px"}
+                                ),
+                            ], className="six columns"),
+                            html.Div([
+                                html.H3("Container Name", style={"margin": "10px", "width": "300px"}),
+                                dcc.Dropdown(
+                                    id="container_name",
+                                    style={"width": "400px"}
+                                ),
+                            ], className="six columns"),
+                            html.Div([
+                                html.H3("Subcontainer Name", style={"margin": "10px", "width": "300px"}),
+                                dcc.Dropdown(
+                                    id="subcontainer_name",
+                                    style={"width": "400px"}
+                                ),
+                            ], className="six columns"),
+                            html.Div([
+                                html.H3("File Name", style={"margin": "10px", "width": "300px"}),
+                                dcc.Dropdown(
+                                    id="file_name",
+                                    style={"width": "400px"}
+                                ),
+                            ], className="six columns"),
+                        ]),
                     ],
-                    value='csv'
+                    height="500px",
+                    width="600px"
                 ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("File Delimiter"),
-                dcc.Input(
-                    id="file_delimiter",
-                    type="text",
-                    placeholder="File Delimiter",
-                    value=","
-                ),
-            ], className="six columns"),
-        ], className="row"),
-        html.Div([
-            html.Div([
-                html.Label("File Encoding"),
-                dcc.Dropdown(
-                    id="file_encoding",
-                    options=[
-                        {'label': 'utf-8', 'value': 'utf-8'},
-                        {'label': 'latin-1', 'value': 'latin-1'},
-                        {'label': 'iso-8859-1', 'value': 'iso-8859-1'},
-                    ],
-                    value='utf-8'
-                ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("File Header"),
-                dcc.Input(
-                    id="file_header",
-                    type="number",
-                    placeholder="File Header",
-                    value=0
-                ),
-            ], className="six columns"),
-        ], className="row"),
-        html.Div([
-            html.Div([
-                html.Label("File Footer"),
-                dcc.Input(
-                    id="file_footer",
-                    type="number",
-                    placeholder="File Footer",
-                    value=0
-                ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("File Sheet"),
-                dcc.Input(
-                    id="file_sheet",
-                    type="number",
-                    placeholder="File Sheet",
-                    value=0
-                ),
-            ], className="six columns"),
-        ], className="row"),
-        html.Div([
-            html.Div([
-                html.Label("File Skip Rows"),
-                dcc.Input(
-                    id="file_skiprows",
-                    type="number",
-                    placeholder="File Skip Rows",
-                    value=0
-                ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("File Skip Footer"),
-                dcc.Input(
-                    id="file_skipfooter",
-                    type="number",
-                    placeholder="File Skip Footer",
-                    value=0
-                ),
-            ], className="six columns"),
-        ], className="row"),
-        html.Div([
-            html.Div([
-                html.Label("File Compression"),
-                dcc.Dropdown(
-                    id="file_compression",
-                    options=[
-                        {'label': 'infer', 'value': 'infer'},
-                        {'label': 'gzip', 'value': 'gzip'},
-                        {'label': 'bz2', 'value': 'bz2'},
-                        {'label': 'zip', 'value': 'zip'},
-                        {'label': 'xz', 'value': 'xz'},
-                        {'label': 'None', 'value': 'None'},
-                    ],
-                    value='infer'
-                ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("File Decimal"),
-                dcc.Input(
-                    id="file_decimal",
-                    type="text",
-                    placeholder="File Decimal",
-                    value="."
-                ),
-            ], className="six columns"),
-        ], className="row"),
-        html.Div([
-            html.Div([
-                html.Label("File Thousands"),
-                dcc.Input(
-                    id="file_thousands",
-                    type="text",
-                    placeholder="File Thousands",
-                    value=","
-                ),
-            ], className="six columns"),
-            html.Div([
-                html.Label("File Date Format"),
-                dcc.Input(
-                    id="file_dateformat",
-                    type="text",
-                    placeholder="File Date Format",
-                    value="%Y-%m-%d"
-                ),
-            ], className="six columns"),
-        ], className="row"),
-    ])
+            ],
+            style={"display": "flex", "justify-content": "center"}
+        )
 ])
 
 
@@ -326,62 +191,17 @@ def render_content(tab):
         return tab_data_load
 
 
+# callback to populate the dropdowns for the blobstorage environment
 
-
-
-# layout = html.Div(
-#     children=[
-#         html.H1(children='This is our template page'),
-#         html.Div(children='''
-#             This is our landing page content.
-#             '''),
-#         html.Div([
-#             dcc.Upload(
-#                 id="upload_data",
-#                 children=html.Div([
-#                     "Drag and Drop or ",
-#                     html.A("Select File")
-#                 ]),
-#                 style={
-#                     "width": "25%",
-#                     "height": "120px",
-#                     "lineHeight": "60px",
-#                     "borderWidth": "1px",
-#                     "borderStyle": "dashed",
-#                     "borderRadius": "5px",
-#                     "textAlign": "center",
-#                     "margin": "10px"
-#                 },
-#                 # Allo multiple files to be uploaded
-#                 multiple=False
-#             ),
-#             html.Div(id="output_data_upload")
-#         ])
-#     ],
-# )
-
-
-
-# @dash.callback(
-#     Output('output_data_upload', 'children'),
-#     Input('upload_data', 'contents'),
-#     State('upload_data', 'filename'),
-#     State('upload_data', 'last_modified')
-# )
-# def update_output(list_of_contents, list_of_names, list_of_dates):
-
-#     # print(list_of_contents)
-#     # print(f"list_of_names: {list_of_names}")
-#     # print(f"list_of_dates: {list_of_dates}")
-
-#     if list_of_contents is not None:
-
-#         output = [parse_contents(list_of_contents, list_of_names, list_of_dates)]
-
-#     else:
-#         output = None
-
-#     return output
-
-
+@dash.callback(
+    Output('blobstorage_environment', 'options'),
+    [Input('blobstorage_environment', 'value')]
+)
+def populate_blobstorage_environment(value):
+    # if value is None:
+        
+    # else:
+    #     return [
+    #         {"label": "blobstorage_environment_1", "value": "blobstorage_environment_1"},
+    #     ]
 
