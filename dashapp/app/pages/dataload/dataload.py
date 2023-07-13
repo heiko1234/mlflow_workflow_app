@@ -7,7 +7,7 @@ import io
 
 import pandas as pd
 
-from upath import UPath
+# from upath import UPath
 
 import dash
 from dash import html, dcc
@@ -193,15 +193,15 @@ def render_content(tab):
 
 # callback to populate the dropdowns for the blobstorage environment
 
-@dash.callback(
-    Output('blobstorage_environment', 'options'),
-    [Input('blobstorage_environment', 'value')]
-)
-def populate_blobstorage_environment(value):
-    # if value is None:
+# @dash.callback(
+#     Output('blobstorage_environment', 'options'),
+#     [Input('blobstorage_environment', 'value')]
+# )
+# def populate_blobstorage_environment(value):
+#     # if value is None:
         
-    # else:
-    #     return [
-    #         {"label": "blobstorage_environment_1", "value": "blobstorage_environment_1"},
-    #     ]
+#     # else:
+#     #     return [
+#     #         {"label": "blobstorage_environment_1", "value": "blobstorage_environment_1"},
+#     #     ]
 
