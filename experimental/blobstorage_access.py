@@ -54,9 +54,57 @@ connection_string
 
 
 
+# see General Dagster Pipeline (Repo)
+
+blob_client = BlobServiceClient.from_connection_string(connection_string)
+
+
+
+
+container_name = "coinbasedata"
+blob_container_client = ContainerClient.from_connection_string(
+    connection_string,
+    container_name
+    )
+
+
+subcontainer = "coinbasedata"
+files_with = ".parquet"
+
+output = []
+for blob in blob_container_client.list_blobs():
+    print(blob.name)
+    if subcontainer in blob.name and files_with in blob.name:
+        output.append(blob.name.split("/")[1])
+output
+
+
+subcontainer = "coinbasedata"
+file = "coinbase_data.parquet"
+
+
+blob_str = subcontainer + "/" + file
+bytes = (
+    blob_container_client
+    .get_blob_client(blob=blob_str)
+    .download_blob()
+    .readall()
+)
+pq_file = io.BytesIO(bytes)
+df = pd.read_parquet(pq_file)
+
+df
+
+
+
 # get a file with blobclient
-blob_container_client = BlobClient.from_connection_string(conn_str=connection_string, container_name=container_name, blob_name="coinbasedata/coinbase_data.parquet")
-bytes=blob_container_client.download_blob().readall()
+blob_container_client = BlobClient.from_connection_string(conn_str=connection_string, container_name=container_name, blob_name="coinbasedata")
+
+subcontainer = "coinbasedata"
+file = "coinbase_data.parquet"
+
+blob_str = subcontainer + "/" + file
+bytes=blob_container_client.get_blob_client(blob=blob_str).download_blob().readall()
 pq_file = io.BytesIO(bytes)
 df = pd.read_parquet(pq_file)
 df
@@ -117,20 +165,20 @@ list_blobs
 
 
 
-bytes=blob_container_client.get_blob_client(blob="coinbasedata/coinbase_data.parquet").download_blob().readall()
-pq_file = io.BytesIO(bytes)
-df = pd.read_parquet(pq_file)
-df
+# bytes=blob_container_client.get_blob_client(blob="coinbasedata/coinbase_data.parquet").download_blob().readall()
+# pq_file = io.BytesIO(bytes)
+# df = pd.read_parquet(pq_file)
+# df
 
 
 
 
 
-# list all blob containers and blobs
-blob_service_client = BlobServiceClient.from_connection_string(conn_str=connection_string)
-containers = blob_service_client.list_containers()
-list_containers = [container for container in containers]
-list_containers
+# # list all blob containers and blobs
+# blob_service_client = BlobServiceClient.from_connection_string(conn_str=connection_string)
+# containers = blob_service_client.list_containers()
+# list_containers = [container for container in containers]
+# list_containers
 
 
 
