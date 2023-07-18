@@ -30,11 +30,12 @@ adlfs = "^2021.10.0"  # 2022.7.0  # "^2023.4.0"
 
 # make it work again
 protobuf = "< 3.20.0"
-jinja2 = "< 2.11"
-MarkupSafe = "< 2.1"
+# jinja2 = "< 2.11"
+# MarkupSafe = "< 2.1"
 itsdangerous = "< 2.1"
 ipython_genutils = "*"
 psycopg2-binary = "^2.8"    # der hier muss sein sonst geht azurite verbindung nicht
+werkzeug = "> 2.1.2"   # <= 2.1.2
 
 
 plotly = "^5.14.1"

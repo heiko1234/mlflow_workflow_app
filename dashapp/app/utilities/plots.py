@@ -1,6 +1,6 @@
 
 
-
+from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 import plotly.express as px
 import pandas as pd
@@ -74,6 +74,10 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
     if usl < lsl:
         # usl, lsl = lsl, usl
         raise ValueError("usl must be greater than lsl")
+
+
+    # TODO add marginal
+    # fig = make_subplots(rows=2, cols=1, row_heights=[0.25, 0.75])
 
     fig = go.Figure()
 
@@ -328,35 +332,56 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
 
 
 
-data = pd.DataFrame()
+# data = pd.DataFrame()
 
-data["x"] = np.random.normal(0, 1, 50)
-data["y"] = np.random.normal(0, 1, 50)
-# random labels, not repeated, 1000
-data["text"] = np.random.choice(list("ABCDEFGHIJ"), 50, replace=True)
-
-data
-
-
-control_chart(
-    data=data,
-    y_name="y",
-    usl=3,
-    lsl=-3,
-    xlabel="text",
-    outliers=True,
-    nelson=True,
-    annotations=True,
-    lines=True,
-    mean = None,
-    sigma = None,
-    markersize = 6,
-    show=True
-    )
+# data["x"] = np.random.normal(0, 1, 50)
+# data["y"] = np.random.normal(0, 1, 50)
+# # random labels, not repeated, 1000
+# data["text"] = np.random.choice(list("ABCDEFGHIJ"), 50, replace=True)
+# data["text2"] = np.random.choice(list("ABCDEFGHIJ"), 50, replace=True)
 
 
+# data
 
 
+# control_chart(
+#     data=data,
+#     y_name="y",
+#     usl=3,
+#     lsl=-3,
+#     xlabel="text",
+#     outliers=True,
+#     nelson=True,
+#     annotations=True,
+#     lines=True,
+#     mean = None,
+#     sigma = None,
+#     markersize = 6,
+#     show=True
+#     )
+
+
+# # https://github.com/heiko1234/data_science_tutorials/blob/main/polymer_process_improvement/source/control_chart.py
+
+# # add phasis to control chart
+# # https://plotly.com/python/marginal-plots/
+
+# # https://stackoverflow.com/questions/70952672/plotly-plot-with-multiple-marginal
+
+
+# import plotly.express as px
+
+
+# fig = px.scatter(
+#     data,
+#     x=data.index,
+#     y="y",
+#     color=["text","text2"],     # "text",
+#     # facet_col="text",
+#     marginal_x="rug"
+#     )
+
+# fig.show()
 
 
 

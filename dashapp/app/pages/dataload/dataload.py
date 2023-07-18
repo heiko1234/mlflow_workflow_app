@@ -77,6 +77,8 @@ def parse_contents(contents, filename, date):
 
 
 
+
+
 # layout with several tabs, tab1 contains the upload of files, tab2 contains the interaction with a azure blob storage to load one file from for the later analysis
 
 layout = html.Div(
@@ -92,12 +94,15 @@ layout = html.Div(
             id="data_tabs_div",
             children=
                 [
-                dcc.Tabs(id='data_tabs', value='tab_data_upload', children=[
-                    dcc.Tab(label='File Usage', value='tab_data_upload'),
-                    dcc.Tab(label='Blobstorage Usage', value='tab_data_load'),
-                ]),
+                dcc.Tabs(id='data_tabs', value='tab_data_upload',
+                    children=[
+                        dcc.Tab(label='File Usage', value='tab_data_upload'),
+                        dcc.Tab(label='Blobstorage Usage', value='tab_data_load'),
+                    ]),
                 html.Div(id='data_tabs_content'),
-            ]),
+                html.Div(id="output_data_upload")
+                ]
+        ),
     ]
 )
 
@@ -107,10 +112,12 @@ tab_data_upload = html.Div([
     html.Div([
         dcc.Upload(
             id="upload_data",
-            children=html.Div([
-                "Drag and Drop or ",
-                html.A("Select File")
-            ]),
+            children=html.Div(
+                [
+                    "Drag and Drop or ",
+                    html.A("Select File")
+                ]
+            ),
             style={
                 "width": "250px",
                 "height": "120px",
@@ -189,6 +196,55 @@ def render_content(tab):
         return tab_data_upload
     elif tab == 'tab_data_load':
         return tab_data_load
+
+
+
+@dash.callback(
+    Output('output_data_upload', 'children'),
+    [
+        Input('data_tabs', 'value'),
+        Input('upload_data', 'filename'),
+        Input('upload_data', 'last_modified')
+    ]
+)
+def update_output(tab, list_of_names, list_of_dates):
+
+    if tab == 'tab_data_upload':
+
+        date = datetime.datetime.fromtimestamp(list_of_dates)
+        date = date.strftime("%m.%d.%Y %H:%M:%S")
+
+
+
+        # if "csv" in list_of_names:
+        #     df = 
+        # elif "xls" in list_of_names:
+        #     df
+        # elif "xlsx" in list_of_names:
+        #     df
+        # elif "parquet" in list_of_names:
+
+
+        output =  html.Div(
+            children=[
+                html.H3(list_of_names),
+                html.H3(date),
+                html.Hr(),  # horizontal line
+                html.H1(),
+                # dash_table.DataTable(
+                #     df.to_dict('records'),
+                #     [{'name': i, 'id': i} for i in df.columns]
+                # ),
+            ]
+        )
+
+        return output
+
+
+
+
+
+
 
 
 # callback to populate the dropdowns for the blobstorage environment
