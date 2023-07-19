@@ -10,6 +10,7 @@ import pandas as pd
 # from upath import UPath
 
 import dash
+from dash import ctx
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from dash import dash_table
@@ -94,60 +95,122 @@ layout = html.Div(
             id="data_tabs_div",
             children=
                 [
-                dcc.Tabs(id='data_tabs', value='tab_data_upload',
-                    children=[
-                        dcc.Tab(label='File Usage', value='tab_data_upload'),
-                        dcc.Tab(label='Blobstorage Usage', value='tab_data_load'),
-                    ]),
-                html.Div(id='data_tabs_content'),
-                html.Div(id="output_data_upload")
-                ]
-        ),
+                    html.Div([
+                        html.Div([
+                            html.Div([
+                                dcc.Tabs(id='data_tabs', value='tab_data_upload',
+                                    children=[
+                                        dcc.Tab(label='File Usage', value='tab_data_upload'),
+                                        dcc.Tab(label='Blobstorage Usage', value='tab_data_load'),
+                                    ],
+                                    style={
+                                        "display": "flex",
+                                        "width": "500px",
+                                        "align-items": "center",
+                                        "justify-content": "center"
+                                        }
+                                    ),
+                                ],
+                                style={
+                                    "display": "flex",
+                                    "align-items": "center",
+                                    "justify-content": "center"
+                                }
+                            ),
+                            html.Div(id='data_tabs_content'),
+                            ],
+                        ),
+                        html.Div([
+                            standard_card(
+                                id="data_tabs_content_card",
+                                header_text="Data Tabs Content",
+                                content=[
+                                    html.Div([
+                                        html.Div(id="output_data_upload")
+                                    ])
+                                ],
+                                height="500px",
+                                width="1200px"
+                            )
+                            ],
+                        )
+                    ],
+                    style={
+                        "display": "block",
+                    }
+                    )
+                ],
+            style={
+                "display": "flex",
+                "align-items": "center",
+                "justify-content": "center"
+            }
+        )
     ]
 )
+
+
 
 # create the content of the tab_data_upload
 
 tab_data_upload = html.Div([
-    html.Div([
-        dcc.Upload(
-            id="upload_data",
-            children=html.Div(
-                [
-                    "Drag and Drop or ",
-                    html.A("Select File")
-                ]
-            ),
-            style={
-                "width": "250px",
-                "height": "120px",
-                "lineHeight": "60px",
-                "borderWidth": "1px",
-                "borderStyle": "dashed",
-                "borderRadius": "5px",
-                "textAlign": "center",
-                "margin": "10px"
-            },
-            # Allo multiple files to be uploaded
-            multiple=False
-        ),
-        html.Div(id="output_data_upload")
+    html.Div(
+        className="blobdata_loading_div",
+        children=
+        [
+        standard_card(
+            id="upload_data_card",
+            header_text="Drag and Drop your Data",
+            width="600px",
+            height="500px",
+            content=[
+                html.Div([
+                    dcc.Upload(
+                        id="upload_data",
+                        children=html.Div(
+                            [
+                                "Drag and Drop or ",
+                                html.A("Select File")
+                            ]
+                        ),
+                        style={
+                            "width": "250px",
+                            "height": "120px",
+                            "lineHeight": "60px",
+                            "borderWidth": "1px",
+                            "borderStyle": "dashed",
+                            "borderRadius": "5px",
+                            "textAlign": "center",
+                            "margin": "10px"
+                        },
+                        # Allo multiple files to be uploaded
+                        multiple=False
+                    ),
+                ],
+                style={
+                    "display": "flex",
+                    "align-items": "center",
+                    "justify-content": "center"
+                    }
+                ),
+            ],
+        )
     ])
-], style={"display": "flex", "justify-content": "center"}
-)
+])
 
 
 tab_data_load = html.Div(
-    id="blobdata_loading_div",
+    className="blobdata_loading_div",   # id
     children=[
         html.Div(
-            id="blobdata_loading_subdiv",
+            className="blobdata_loading_subdiv",
             children=[
                 standard_card(
                     id="blobdatacard",
                     header_text="Blob Data Access",
                     content=[
-                        html.Div([
+                        html.Div(
+                            [
                             html.Div([
                                 html.H3("Blobstorage Environment", style={"margin": "10px", "width": "300px"}),
                                 dcc.Dropdown(
@@ -176,7 +239,8 @@ tab_data_load = html.Div(
                                     style={"width": "400px"}
                                 ),
                             ], className="six columns"),
-                        ]),
+                        ],
+                        ),
                     ],
                     height="500px",
                     width="600px"
@@ -200,45 +264,86 @@ def render_content(tab):
 
 
 @dash.callback(
-    Output('output_data_upload', 'children'),
+    [
+        Output('output_data_upload', 'children'),
+        Output("data_session_store", "data")
+    ],
     [
         Input('data_tabs', 'value'),
+        Input('upload_data', 'contents'),
         Input('upload_data', 'filename'),
         Input('upload_data', 'last_modified')
     ]
 )
-def update_output(tab, list_of_names, list_of_dates):
+def update_output(tab, content, list_of_names, list_of_dates):
 
-    if tab == 'tab_data_upload':
+    button_triggered = ctx.triggered_id
 
-        date = datetime.datetime.fromtimestamp(list_of_dates)
-        date = date.strftime("%m.%d.%Y %H:%M:%S")
+    if button_triggered == 'data_tabs':
+
+        output = None
+        df_json = None
+
+        return output, df_json
+
+    else:
+
+        if tab == 'tab_data_upload':
+
+            date = datetime.datetime.fromtimestamp(list_of_dates)
+            date = date.strftime("%m.%d.%Y %H:%M:%S")
 
 
-
-        # if "csv" in list_of_names:
-        #     df = 
-        # elif "xls" in list_of_names:
-        #     df
-        # elif "xlsx" in list_of_names:
-        #     df
-        # elif "parquet" in list_of_names:
+            content_type, content_string = content.split(',')
+            decoded = base64.b64decode(content_string)
 
 
-        output =  html.Div(
-            children=[
-                html.H3(list_of_names),
-                html.H3(date),
-                html.Hr(),  # horizontal line
-                html.H1(),
-                # dash_table.DataTable(
-                #     df.to_dict('records'),
-                #     [{'name': i, 'id': i} for i in df.columns]
-                # ),
-            ]
-        )
+            # if csv file upload file to data_session_store
 
-        return output
+            if "csv" in list_of_names:
+                df = pd.read_csv(io.StringIO(decoded.decode('utf-8')), sep=";")
+
+            if "xls" in list_of_names:
+                df = pd.read_excel(io.BytesIO(decoded))
+
+            if "xlsx" in list_of_names:
+                df = pd.read_excel(io.BytesIO(decoded))
+
+            if "parquet" in list_of_names:
+                df = pd.read_parquet(io.BytesIO(decoded))
+
+
+            output =  html.Div(
+                children=[
+                    html.H3(list_of_names),
+                    html.H3(date),
+                    html.Hr(),  # horizontal line
+                    html.H1(),
+                    dash_table.DataTable(
+                        df.to_dict('records'),
+                        [{'name': i, 'id': i} for i in df.columns],
+                        style_table={
+                            'overflowX': 'auto',
+                            "width": "1100px",
+                            "height": "300px",
+                            },
+                        style_cell={
+                            # all three widths are needed
+                            'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
+                            'overflow': 'hidden',
+                            'textOverflow': 'ellipsis',
+                        }
+                    ),
+                ],
+                style={
+                    "justify-content": "center",
+                    }
+            )
+
+            df_json = df.to_json(date_format='iso', orient='split')
+
+            return output, df_json
+
 
 
 
@@ -255,9 +360,21 @@ def update_output(tab, list_of_names, list_of_dates):
 # )
 # def populate_blobstorage_environment(value):
 #     # if value is None:
-        
+
 #     # else:
 #     #     return [
 #     #         {"label": "blobstorage_environment_1", "value": "blobstorage_environment_1"},
 #     #     ]
+
+
+
+
+
+
+
+
+
+
+
+
 

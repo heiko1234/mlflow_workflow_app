@@ -21,6 +21,9 @@ a_session_store = dcc.Store(
 project_basic_session_store = dcc.Store(
     id = "project_basic_session_store", storage_type="session"
 )
+data_session_store = dcc.Store(
+    id = "data_session_store", storage_type="session"
+)
 
 # localhost/dashapp/pages_id
 url_base_pathname="/mlflowapp"
@@ -67,6 +70,7 @@ app.layout = html.Div(
         sidebar,
         a_session_store,
         project_basic_session_store,
+        data_session_store,
         html.Div(
             [
                 dash.page_container
