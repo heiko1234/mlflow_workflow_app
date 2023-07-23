@@ -6,8 +6,9 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
-from dashapp.app.utilities.nelson import apply_rules, rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8
+# from dashapp.app.utilities.nelson import apply_rules, rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8
 
+from app.utilities.nelson import apply_rules, rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8
 
 
 # plotly graphic for quality control with plotly go , outlier detection, values outside of 3 standard deviations or limits are colored red
