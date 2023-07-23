@@ -54,8 +54,15 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
     min_data = min(data[y_name])
     max_data = max(data[y_name])
 
-    abs_min_x = min([min_data, lsl, mean_data - 3*sigma_data])
-    abs_max_x = max([max_data, usl, mean_data + 3*sigma_data])
+    if lsl is not None:
+        abs_min_x = min([min_data, lsl, mean_data - 3*sigma_data])
+    else:
+        abs_min_x = min([min_data, mean_data - 3*sigma_data])
+
+    if usl is not None:
+        abs_max_x = max([max_data, usl, mean_data + 3*sigma_data])
+    else:
+        abs_max_x = max([max_data, mean_data + 3*sigma_data])
 
     spread = abs_max_x - abs_min_x
 
@@ -72,9 +79,14 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
             label_list = None
             label_values = None
 
-    if usl < lsl:
-        # usl, lsl = lsl, usl
-        raise ValueError("usl must be greater than lsl")
+    if (usl is None) and (lsl is None):
+        try:
+            if usl < lsl:
+                print(f"use usl: {usl} and lsl: {lsl}")
+                # usl, lsl = lsl, usl
+                raise ValueError("usl must be greater than lsl")
+        except:
+            pass
 
 
     # TODO add marginal
@@ -84,16 +96,18 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
 
     # red areas for out of control
     # lsl
-    fig.add_hline(y=float(lsl), line_color="red")
-    y0 = abs_min_x-plot_expansion
-    y1 = lsl
-    fig.add_hrect(y0=y0, y1=y1, fillcolor="red", opacity=0.1)
+    if lsl is not None:
+        fig.add_hline(y=float(lsl), line_color="red")
+        y0 = abs_min_x-plot_expansion
+        y1 = lsl
+        fig.add_hrect(y0=y0, y1=y1, fillcolor="red", opacity=0.1)
 
     # usl
-    fig.add_hline(y=float(usl), line_color="red")
-    y0 = abs_max_x+plot_expansion
-    y1 = usl
-    fig.add_hrect(y0=y0, y1=y1, fillcolor="red", opacity=0.1)
+    if usl is not None:
+        fig.add_hline(y=float(usl), line_color="red")
+        y0 = abs_max_x+plot_expansion
+        y1 = usl
+        fig.add_hrect(y0=y0, y1=y1, fillcolor="red", opacity=0.1)
 
     # normal plot
     fig.add_traces(go.Scatter(

@@ -260,7 +260,7 @@ def update_analysisplot_card_content(df_json, column, transformation):
 
 
         fig = control_chart(
-            data=data,
+            data=df,
             y_name=column,
             xlabel= None,
             title = "Controlchart",
