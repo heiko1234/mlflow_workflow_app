@@ -120,20 +120,35 @@ layout = html.Div(
                             html.Div(id='data_tabs_content'),
                             ],
                         ),
-                        html.Div([
-                            standard_card(
-                                id="data_tabs_content_card",
-                                header_text="Data Tabs Content",
-                                content=[
-                                    html.Div([
-                                        html.Div(id="output_data_upload")
-                                    ])
+                        html.Div(children=[
+                            html.Div([
+                                standard_card(
+                                    id="data_tabs_content_card",
+                                    header_text="Example Data from Upload",
+                                    content=[
+                                        html.Div([
+                                            html.Div(id="output_data_upload")
+                                        ])
+                                    ],
+                                    height="500px",
+                                    width="1000px"
+                                )
                                 ],
-                                height="500px",
-                                width="1200px"
-                            )
-                            ],
-                        )
+                            ),
+                            html.Div([
+                                standard_card(
+                                    id="data_descriptive_card",
+                                    header_text="Data Statistics",
+                                    content=[
+                                        html.Div([
+                                            html.Div(id="data_descriptive")
+                                        ])
+                                    ],
+                                    height="500px",
+                                    width="1000px"
+                                )
+                            ])
+                        ], style={"display": "flex", "justify-content": "center"}),
                     ],
                     style={
                         "display": "block",
@@ -320,11 +335,11 @@ def update_output(tab, content, list_of_names, list_of_dates):
                     html.Hr(),  # horizontal line
                     html.H1(),
                     dash_table.DataTable(
-                        df.to_dict('records'),
+                        df.head().to_dict('records'),     #with or without head?
                         [{'name': i, 'id': i} for i in df.columns],
                         style_table={
                             'overflowX': 'auto',
-                            "width": "1100px",
+                            "width": "900px",
                             "height": "300px",
                             },
                         style_cell={
@@ -346,6 +361,51 @@ def update_output(tab, content, list_of_names, list_of_dates):
 
 
 
+@dash.callback(
+    Output('data_descriptive', 'children'),
+    [
+        Input('data_session_store', 'data')
+    ]
+)
+def update_descriptive(df_json):
+    # load data from data_session_store and make pandas describe for output
+    if df_json is None:
+        return None
+    else:
+        df = pd.read_json(df_json, orient='split')
+
+        dft=df.describe().reset_index(drop = True).T
+        dft = dft.reset_index(drop=False)
+        dft.columns= ["description", "counts", "mean", "std", "min", "25%", "50%", "75%", "max"]
+        dft["nan"]=df.isna().sum().values
+
+        output_df=dft.round(2)
+
+        output = html.Div(
+            children=[
+                html.H1(),
+                dash_table.DataTable(
+                    output_df.to_dict('records'),
+                    [{'name': i, 'id': i} for i in output_df.columns],
+                    style_table={
+                        'overflowX': 'auto',
+                        "width": "900px",
+                        "height": "400px",
+                        },
+                    style_cell={
+                        # all three widths are needed
+                        'minWidth': '70px', 'width': '70px', 'maxWidth': '2500px',
+                        'overflow': 'hidden',
+                        'textOverflow': 'ellipsis',
+                    }
+                ),
+            ],
+            style={
+                "justify-content": "center",
+                }
+        )
+
+    return output
 
 
 
