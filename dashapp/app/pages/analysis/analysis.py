@@ -75,10 +75,14 @@ layout = html.Div(
                                 [
                                     dcc.Loading(id="analysisplot_card_content"),
                                 ],
+                                style={
+                                    "justify-content": "center",
+                                    "display": "flex"
+                                }
                             )
                         ])
                     ],
-                    height="500px",
+                    height="600px",
                     width="1700px",
                 ),
             ]
@@ -280,8 +284,9 @@ def update_analysisplot_card_content(df_json, column, transformation):
             id="analysisplot",
             figure=fig,
             style={
-                "width": "1500px",
+                "width": "1600px",
                 "height": "400px",
+                "justify-content": "center",
                 }
         )
 

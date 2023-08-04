@@ -6,16 +6,19 @@ import plotly.express as px
 import pandas as pd
 import numpy as np
 
-# from dashapp.app.utilities.nelson import apply_rules, rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8
 
-from app.utilities.nelson import apply_rules, rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8
+try:
+    from dashapp.app.utilities.nelson import apply_rules, rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8
+
+except Exception:
+    from app.utilities.nelson import apply_rules, rule1, rule2, rule3, rule4, rule5, rule6, rule7, rule8
 
 
 # plotly graphic for quality control with plotly go , outlier detection, values outside of 3 standard deviations or limits are colored red
 
 
 
-def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None, usl = None, outliers = True, annotations = True, lines = True, nelson=True, mean = None, sigma = None, markersize = 6, show=False):
+def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None, usl = None, outliers = True, annotations = True, lines = True, nelson=True, mean = None, sigma = None, markersize = 6, showlegend= False, show=False):
     """_summary_
 
     Args:
@@ -32,6 +35,7 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
         mean (_type_, optional): number. Defaults to None.
         sigma (_type_, optional): number. Defaults to None.
         markersize (int, optional): number. Defaults to 6.
+        showlegend (bool, optional): Defaults to False.
         show (bool, optional): give dict or plotly figure. Defaults to False.
 
     Raises:
@@ -55,14 +59,14 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
     max_data = max(data[y_name])
 
     if lsl is not None:
-        abs_min_x = min([min_data, lsl, mean_data - 3*sigma_data])
+        abs_min_x = min([min_data, lsl, (mean_data - 3*sigma_data)])
     else:
-        abs_min_x = min([min_data, mean_data - 3*sigma_data])
+        abs_min_x = min([min_data, (mean_data - 3*sigma_data)])
 
     if usl is not None:
-        abs_max_x = max([max_data, usl, mean_data + 3*sigma_data])
+        abs_max_x = max([max_data, usl, (mean_data + 3*sigma_data)])
     else:
-        abs_max_x = max([max_data, mean_data + 3*sigma_data])
+        abs_max_x = max([max_data, (mean_data + 3*sigma_data)])
 
     spread = abs_max_x - abs_min_x
 
@@ -338,6 +342,10 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
                     "yshift": 0
                 }
             )
+            
+    fig.update_layout(showlegend=showlegend)   # showlegend default = False
+    
+    fig.update_layout(yaxis_range=[abs_min_x-plot_expansion, abs_max_x+plot_expansion])
 
     if show:
         fig.show()
