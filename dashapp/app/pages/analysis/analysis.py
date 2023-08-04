@@ -17,7 +17,8 @@ from app.utilities.cards import (
 )
 
 from app.utilities.plots import (
-    control_chart
+    control_chart,
+    control_chart_marginal
 )
 
 
@@ -50,7 +51,7 @@ layout = html.Div(
                             ],
                         )
                     ],
-                    height="500px",
+                    height="400px",
                     width="1700px",
                 ),
             ]
@@ -70,19 +71,19 @@ layout = html.Div(
                                 ],
                                 style={"display": "flex"}
                             ),
-                            html.H3(""), # empty line
                             html.Div(
                                 [
                                     dcc.Loading(id="analysisplot_card_content"),
                                 ],
                                 style={
                                     "justify-content": "center",
+                                    "align-items": "center",
                                     "display": "flex"
                                 }
                             )
                         ])
                     ],
-                    height="600px",
+                    height="700px",
                     width="1700px",
                 ),
             ]
@@ -113,10 +114,12 @@ def update_analysis_content(df_json):
 
         dft["usage"] = "no usage"
         dft["transformation"] = "no transformation"
+        
+        dft["correlation"]=None
 
         dft=dft.round(2)
 
-        output_df=dft[["description", "usage", "transformation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
+        output_df=dft[["description", "usage", "transformation", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
 
         usage_options = [
             {"label": "no usage", "value": "no usage"},
@@ -133,6 +136,7 @@ def update_analysis_content(df_json):
             {"label": "x^3", "value": "x^3"},
         ]
 
+
         dropdown_columns = ["usage", "transformation"]
 
         colums_options = []
@@ -148,6 +152,7 @@ def update_analysis_content(df_json):
             children=[
                 html.H1(),
                 dash_table.DataTable(
+                    # header of datatable fix when scrolling
                     id="analysis_table",
                     editable=True,
                     data=output_df.to_dict('records'),
@@ -158,10 +163,11 @@ def update_analysis_content(df_json):
                         'transformation':
                             {"options": data_transformations},
                     },
+                    fixed_rows={'headers': True},
                     style_table={
                         'overflowX': 'auto',
                         "width": "1600px",
-                        "height": "400px",
+                        "height": "300px",
                         },
                     style_cell={
                         # all three widths are needed
@@ -263,7 +269,23 @@ def update_analysisplot_card_content(df_json, column, transformation):
         df = pd.DataFrame(data=data, columns=[column])
 
 
-        fig = control_chart(
+        # fig = control_chart(
+        #     data=df,
+        #     y_name=column,
+        #     xlabel= None,
+        #     title = "Controlchart",
+        #     lsl = None,
+        #     usl = None,
+        #     outliers = True,
+        #     annotations = True,
+        #     lines = True,
+        #     nelson=True,
+        #     mean = None,
+        #     sigma = None,
+        #     markersize = 6,
+        #     show=False)
+        
+        fig = control_chart_marginal(
             data=df,
             y_name=column,
             xlabel= None,
@@ -285,12 +307,100 @@ def update_analysisplot_card_content(df_json, column, transformation):
             figure=fig,
             style={
                 "width": "1600px",
-                "height": "400px",
+                "height": "650px",
                 "justify-content": "center",
                 }
         )
 
         return output
+
+
+
+
+
+# with user selection for targer calculat the correlations and present in the analysis_table
+
+
+# callback to update the data from analysis_table to analysis_table
+
+@dash.callback(
+    Output("analysis_table", "data"),
+    [
+        Input("analysis_table", "data"),
+        State("data_session_store", "data"),
+    ]
+)
+def update_target_analysis_table(data, df_json):
+
+
+    dd = pd.DataFrame(data=data)
+    
+    # print(f"analysis_table1: {dd.head()}")
+    
+    try:
+
+        name_of_target = dd.loc[dd['usage'] == 'target']['description'].values[0]
+
+        print(f"name_of_target: {name_of_target}")
+        
+    except BaseException:
+        name_of_target = None
+
+    # get data from data_session_store
+    if df_json is not None:
+        df = pd.read_json(df_json, orient='split')
+        print(f"session store: {df}")
+        
+    # TODO: info for data transformation sahould be sed for correlation calculation
+
+
+    # calculate correlations for name_of_target and ignore if column may contains none values use numpy corrcoef
+    
+    if name_of_target is not None:
+    
+        correlations = []
+        for i in df.columns:
+            if i != name_of_target:
+                corr = np.corrcoef(df[name_of_target], df[i])[0, 1]
+                correlations.append(corr)
+            else:
+                correlations.append(1)
+
+        # print(f"correlations: {correlations}")
+        # print(f"len of correlations: {len(correlations)}")
+        # print(f"analysis_table before2: {dd.head()}")
+        # print(f"len of analysis_table before: {len(dd)}")
+
+        # round all values in list correlation to  4 digits
+        correlations = [round(i, 4) for i in correlations]
+
+        dd['correlation'] = correlations
+        
+    else:
+        dd['correlation'] = None
+
+    print(f"update_target_analysis_table analysis_table3: {dd.head()}")
+
+    output = dd.to_dict('records')
+
+    return output
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

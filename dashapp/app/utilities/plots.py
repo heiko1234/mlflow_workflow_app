@@ -355,6 +355,95 @@ def control_chart(data, y_name, xlabel= None, title = "Controlchart", lsl = None
 
 
 
+
+
+
+def control_chart_marginal(data, y_name, xlabel= None, title = "Controlchart", lsl = None, usl = None, outliers = True, annotations = True, lines = True, nelson=True, mean = None, sigma = None, markersize = 6, showlegend= False, show=False):
+    
+    fig2 = control_chart(
+        data=data,
+        y_name=y_name,
+        xlabel= xlabel,
+        title = title,
+        lsl = lsl,
+        usl = usl,
+        outliers = outliers,
+        annotations = annotations,
+        lines = lines,
+        nelson=nelson,
+        mean = mean,
+        sigma = sigma,
+        markersize = markersize,
+        showlegend= showlegend,
+        show=False)
+    
+    # rule base analysis
+    data1 = data.loc[rule1(original=data[y_name]), y_name]
+    data2 = data.loc[rule2(original=data[y_name]), y_name]
+    data3 = data.loc[rule3(original=data[y_name]), y_name]
+    data4 = data.loc[rule4(original=data[y_name]), y_name]
+    data5 = data.loc[rule5(original=data[y_name]), y_name]
+    data6 = data.loc[rule6(original=data[y_name]), y_name]
+    data7 = data.loc[rule7(original=data[y_name]), y_name]
+    data8 = data.loc[rule8(original=data[y_name]), y_name]
+    
+    data_sum = [data1, data2, data3, data4, data5, data6, data7, data8]
+
+    fig = make_subplots(rows=2, cols=1, row_heights=[0.25, 0.75], vertical_spacing=0.025, shared_xaxes=True)
+    
+    for i in range(len(data_sum)):
+        
+            data_i = data_sum[i]
+    
+            rule_name = f"rule {int(i+1)}"
+
+            fig.add_trace(go.Box(
+                x=data_i.index,
+                marker_symbol='line-ns-open',
+                # marker size
+                marker_size=12,
+                # marker thickness
+                marker_line_width=3,
+                marker_color='violet',
+                boxpoints='all',
+                jitter=0,
+                fillcolor='rgba(255,255,255,0)',
+                line_color='rgba(255,255,255,0)',
+                hoveron='points',
+                name = rule_name,
+                # name=data_i.name
+            ),
+            row=1, col=1)
+
+    for i in range(len(fig2.data)):
+        fig.add_trace(fig2.data[i], row=2, col=1)
+
+    for j in range(len(fig2.layout.annotations)):
+        fig.add_annotation(fig2.layout.annotations[j], row=2, col=1)
+        
+    for z in range(len(fig2.layout.shapes)):
+        fig.add_shape(fig2.layout.shapes[z], row=2, col=1)
+    
+
+
+    fig.update_yaxes(range=[fig2.layout.yaxis.range[0], fig2.layout.yaxis.range[1]], row=2, col=1)
+    
+    if showlegend==True:
+        fig.update_layout(showlegend=True)
+    else:
+        fig.update_layout(showlegend=False)
+
+    if show==True:
+        fig.show()
+    else:
+        return fig
+
+
+
+
+
+
+
 # data = pd.DataFrame()
 
 # data["x"] = np.random.normal(0, 1, 50)
