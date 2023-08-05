@@ -119,7 +119,9 @@ def update_analysis_content(df_json):
 
         dft=dft.round(2)
 
-        output_df=dft[["description", "usage", "transformation", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
+        # output_df=dft[["description", "usage", "transformation", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
+        output_df=dft[["description", "usage", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
+
 
         usage_options = [
             {"label": "no usage", "value": "no usage"},
@@ -269,23 +271,7 @@ def update_analysisplot_card_content(df_json, column, transformation):
         df = pd.DataFrame(data=data, columns=[column])
 
 
-        # fig = control_chart(
-        #     data=df,
-        #     y_name=column,
-        #     xlabel= None,
-        #     title = "Controlchart",
-        #     lsl = None,
-        #     usl = None,
-        #     outliers = True,
-        #     annotations = True,
-        #     lines = True,
-        #     nelson=True,
-        #     mean = None,
-        #     sigma = None,
-        #     markersize = 6,
-        #     show=False)
-        
-        fig = control_chart_marginal(
+        fig = control_chart(
             data=df,
             y_name=column,
             xlabel= None,
@@ -300,6 +286,22 @@ def update_analysisplot_card_content(df_json, column, transformation):
             sigma = None,
             markersize = 6,
             show=False)
+        
+        # fig = control_chart_marginal(
+        #     data=df,
+        #     y_name=column,
+        #     xlabel= None,
+        #     title = "Controlchart",
+        #     lsl = None,
+        #     usl = None,
+        #     outliers = True,
+        #     annotations = True,
+        #     lines = True,
+        #     nelson=True,
+        #     mean = None,
+        #     sigma = None,
+        #     markersize = 6,
+        #     show=False)
 
 
         output = dcc.Graph(
@@ -388,8 +390,38 @@ def update_target_analysis_table(data, df_json):
 
 
 
+# callback to etract the target and the selected features from the analysis_table to sessionstore project_target_feature_session_store
 
+@dash.callback(
+    Output("project_target_feature_session_store", "data"),    
+    Input("analysis_table", "data"),
+)
+def update_project_target_feature_session_store(data):
+    
+    dd = pd.DataFrame(data=data)
+    
+    # print(f"analysis_table1: {dd.head()}")
+    
+    try:
 
+        name_of_target = dd.loc[dd['usage'] == 'target']['description'].values[0]
+
+        # print(f"name_of_target: {name_of_target}")
+        
+    except BaseException:
+        name_of_target = None
+
+    try:
+        name_of_features = list(dd.loc[dd['usage'] == 'feature']['description'].values)
+        
+    except BaseException:
+        name_of_features = None
+
+    output_dict = {"target": name_of_target, "features": name_of_features}
+    
+    # print(f"update_project_target_feature_session_store: {output_dict}")
+    
+    return output_dict
 
 
 
