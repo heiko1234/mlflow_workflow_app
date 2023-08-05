@@ -53,14 +53,26 @@ layout = html.Div(
                         href="analysis"
                     ),
                     home_card(
-                        id="modellingcard",
-                        header_text="Modelling",
-                        text="create your Model",
-                        icon="gauche",
-                        href="model"
+                        id="preprocesscard",
+                        header_text="Preproessing",
+                        text="preprocess your data for best model performance",
+                        icon="analysis1",
+                        href="preprocess"
                     ),
             ],
             #style={"display": "flex"}
+            ),
+            html.Div(
+                className="home_page_subcontent",
+                children=[
+                    home_card(
+                        id="modellingcard",
+                        header_text="Modelling",
+                        text="create your Model",
+                        icon="ai1",
+                        href="model"
+                    ),
+                ]
             ),
             html.Div(
                 className="home_page_subcontent",
