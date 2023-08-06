@@ -343,7 +343,7 @@ def update_target_analysis_table(data, df_json):
 
         name_of_target = dd.loc[dd['usage'] == 'target']['description'].values[0]
 
-        print(f"name_of_target: {name_of_target}")
+        # print(f"name_of_target: {name_of_target}")
         
     except BaseException:
         name_of_target = None
@@ -351,7 +351,7 @@ def update_target_analysis_table(data, df_json):
     # get data from data_session_store
     if df_json is not None:
         df = pd.read_json(df_json, orient='split')
-        print(f"session store: {df}")
+        # print(f"session store: {df}")
         
     # TODO: info for data transformation sahould be sed for correlation calculation
 
@@ -381,7 +381,7 @@ def update_target_analysis_table(data, df_json):
     else:
         dd['correlation'] = None
 
-    print(f"update_target_analysis_table analysis_table3: {dd.head()}")
+    # print(f"update_target_analysis_table analysis_table3: {dd.head()}")
 
     output = dd.to_dict('records')
 

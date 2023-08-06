@@ -21,6 +21,14 @@ from app.utilities.plots import (
     control_chart_marginal
 )
 
+from app.utilities.spc import (
+    transform_cleaning_table_in_dict,
+    use_spc_cleaning_dict,
+    create_limits_dict,
+    update_nested_dict,
+    filter_dataframe_by_limits
+)
+
 
 
 dash.register_page(__name__,"/preproces")
@@ -257,7 +265,7 @@ def create_preprocessing_card_table_content(target_feature, data):
         
         spc_rules = [
             {"label": "no cleaning", "value": "no cleaning"},
-            {"label": "remove data", "value": "data"},
+            {"label": "remove data", "value": "remove data"},
         ]
         
         dft["usage"] = "feature"
@@ -377,11 +385,180 @@ def create_preprocessing_card_table_content(target_feature, data):
 
 
 
+# callback to use preprocessing_card_table to save spc rules data preprocessing in session store 
+
+@dash.callback(
+    [
+        Output("project_data_spc_cleaning_session_store", "data"),
+        Output("project_data_limits_session_store", "data"),
+    ],
+    Input("preprocessing_table", "data"),
+)
+def save_spc_rules_in_session_store(data):
+
+    # read data from table
+    # df = pd.read_json(data, orient="split")
+    df = pd.DataFrame(data)
+    
+    print(f"save_spc_rules_in_session_store: df: {df}")
+    print("##### update #####")
+
+    spc_cleaning_dict = transform_cleaning_table_in_dict(df)
+    
+    # limits_dict = create_limits_dict(df)
+    limits_dict= []
+    
+    # print(f"save_spc_rules_in_session_store: spc_cleaning_dict: {spc_cleaning_dict}")
+    
+    return spc_cleaning_dict, limits_dict
+
+
+# callback to use preprocessing_card_table to save limits in
+
+
+# @dash.callback(
+#     Output("project_data_limits_session_store", "data"),
+#     Input("preprocessing_table", "data"),
+# )
+# def save_limits_in_session_store(data):
+#     print("save_limits_in_session_store_callback")
+#     # read data from table
+#     # df = pd.read_json(data, orient="split")
+#     df = pd.DataFrame(data)
+    
+#     limits_dict = create_limits_dict(df)
+    
+#     print(f"save_limits_in_session_store: limits_dict: {limits_dict}")
+    
+#     return limits_dict
 
 
 
+# create plot of preprocessed, so cleaned data by limits and spc rules
+
+@dash.callback(
+    Output("preprocessing_card_cleaned_data_content", "children"),
+    Input("project_target_feature_session_store", "data"),
+)
+def create_plot_preprocessed_data(target_feature):
+    
+    
+    
+    if target_feature is None or len(target_feature) == 0:
+        print(f"create_preprocessing_card_content: target_feature is None")
+        return html.Div(
+            [
+                html.H3("Please select a target feature in the Analysis page.")
+            ]
+        )
+    else:
+        # read data from target_feature
+
+        dict_target_feature = target_feature
+
+        dd_list = []
+        dd_list.append(dict_target_feature["target"])
+        dd_list.extend(dict_target_feature["features"])
+        
+        dd_options = [{"label": i, "value": i} for i in dd_list]
 
 
+    output = html.Div(
+        children=[
+            html.H2(),
+            dcc.Dropdown(
+                id="preprocessing_card_cleaned_data_dropdown",
+                options=dd_options,
+                value=dict_target_feature["target"],
+                style={
+                    "width": "300px",
+                }
+            ),
+            dcc.Loading(
+                id="preprocessing_card_cleaned_data_loading",
+            )
+        ]
+    )
+    
+    return output
+
+
+# additional callback to populate the preprocessing_card_cleaned_data_loading with the plot
+
+@dash.callback(
+    Output("preprocessing_card_cleaned_data_loading", "children"),
+    Input("project_target_feature_session_store", "data"),
+    Input("preprocessing_card_cleaned_data_dropdown", "value"),
+    Input("project_data_spc_limit_cleaning_session_store", "data"),
+    Input("project_data_spc_cleaning_session_store", "data"),
+    State("data_session_store", "data"),
+)
+def create_plot_preprocessed_data(dict_target_feature, selected_feature, limits_dict, spc_cleaning_dict, data):
+    
+    # read data from data_table_session_store
+    
+    if data is None or len(data) == 0:
+        print(f"create_plot_preprocessed_data: data is None")
+        return html.Div(
+            [
+                html.H3("Please select a target feature in the Analysis page.")
+            ]
+        )
+    else:
+        # read data 
+        # read data from data_session_store
+        df = pd.read_json(data, orient="split")
+
+
+
+        dd_list = []
+        dd_list.append(dict_target_feature["target"])
+        dd_list.extend(dict_target_feature["features"])
+
+        output_df = df[dd_list]
+        
+        
+        # print(f"create_plot_preprocessed_data: spc_cleaning_dict: {spc_cleaning_dict}")
+        # print(f"create_plot_preprocessed_data: limits_dict: {limits_dict}")
+
+        
+        # # filter data by spc and limits
+        if spc_cleaning_dict is not None :
+            output_df = use_spc_cleaning_dict(output_df, spc_cleaning_dict)
+        if limits_dict is not None:
+            output_df = filter_dataframe_by_limits(output_df, limits_dict)
+
+        
+        df = pd.DataFrame(output_df[selected_feature])
+
+        fig = control_chart(
+            data=output_df,
+            y_name=selected_feature,
+            xlabel= None,
+            title = "Controlchart",
+            lsl = None,
+            usl = None,
+            outliers = True,
+            annotations = True,
+            lines = True,
+            nelson=True,
+            mean = None,
+            sigma = None,
+            markersize = 6,
+            show=False)
+
+
+        output = dcc.Graph(
+            id="preprocessing_card_cleaned_data_loading_analysisplot",
+            figure=fig,
+            style={
+                "width": "1600px",
+                "height": "650px",
+                "justify-content": "center",
+                }
+        )
+
+        return output
 
 
 

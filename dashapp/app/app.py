@@ -27,6 +27,12 @@ data_session_store = dcc.Store(
 project_target_feature_session_store = dcc.Store(
     id = "project_target_feature_session_store", storage_type="session"
 )
+project_data_spc_cleaning_session_store = dcc.Store(
+    id = "project_data_spc_cleaning_session_store", storage_type="session"
+)
+project_data_spc_limit_cleaning_session_store = dcc.Store(
+    id = "project_data_spc_limit_cleaning_session_store", storage_type="session"
+)
 
 # localhost/dashapp/pages_id
 url_base_pathname="/mlflowapp"
@@ -76,6 +82,8 @@ app.layout = html.Div(
         project_basic_session_store,
         data_session_store,
         project_target_feature_session_store,
+        project_data_spc_cleaning_session_store,
+        project_data_spc_limit_cleaning_session_store,
         html.Div(
             [
                 dash.page_container

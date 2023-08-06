@@ -79,8 +79,8 @@ def use_spc_cleaning_dict(dataframe, spc_cleaning_dict):
                     if spc_cleaning_dict[any_column][any_rule] != "no cleaning":
                         try:
                             
-                            print(f"any_column: {any_column}")
-                            print(f"any_rule: {any_rule}")
+                            # print(f"any_column: {any_column}")
+                            # print(f"any_rule: {any_rule}")
                             # print(dataframe.loc[eval(any_rule+"(original=dataframe[any_column])"), any_column])
                             # list_all_indexes.append(dataframe.loc[eval(any_rule+"(original=dataframe[any_column])"), any_column].index)
                             index_list_rule = dataframe.loc[eval(any_rule+"(original=dataframe[any_column])"), any_column].index
@@ -108,22 +108,45 @@ def create_limits_dict(limits_table_df):
     """This function creates a dictionary with the limits for each feature
 
     Args:
-        limits_table_df (pd.DataFrame): dataframe with the limits for each feature
+        limits_table_df (pd.DataFrame): dataframe with the limits for each feature ["description", "mean", "std", "min", "max"]
 
     Returns:
         _type_: returns a dictionary with the limits for each feature
     """
     limits_dict = {}
 
-    for each_row in limits_table_df.index:
+    for each_row in limits_table_df["description"]:
+        
         limits_dict[each_row] = {
-            "mean": limits_table_df.loc[each_row, "mean"],
-            "std": limits_table_df.loc[each_row, "std"],
-            "min": limits_table_df.loc[each_row, "min"],
-            "max": limits_table_df.loc[each_row, "max"],
+            "mean": limits_table_df.loc[limits_table_df["description"]==each_row, "mean"].values[0],
+            "std": limits_table_df.loc[limits_table_df["description"]==each_row, "std"].values[0],
+            "min": limits_table_df.loc[limits_table_df["description"]==each_row, "min"].values[0],
+            "max": limits_table_df.loc[limits_table_df["description"]==each_row, "max"].values[0],
         }
         
+        
+        # limits_dict.loc[each_row] = {
+        #     "mean": limits_table_df.loc[each_row, "mean"],
+        #     "std": limits_table_df.loc[each_row, "std"],
+        #     "min": limits_table_df.loc[each_row, "min"],
+        #     "max": limits_table_df.loc[each_row, "max"],
+        # }
+        
     return limits_dict
+
+
+
+# limit_table_df = pd.DataFrame()
+
+# limit_table_df["description"] = ["Yield", "Feature1", "Feature2"]
+# limit_table_df["mean"] = [0.5, 0.5, 0.5]
+# limit_table_df["std"] = [0.1, 0.1, 0.1]
+# limit_table_df["min"] = [5, 10, 15]
+# limit_table_df["max"] = [10, 15, 20]
+
+
+# create_limits_dict(limit_table_df)
+
 
 
 def filter_dataframe_by_limits(dataframe, limits_dict):
