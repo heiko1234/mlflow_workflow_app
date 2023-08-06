@@ -118,10 +118,10 @@ def create_limits_dict(limits_table_df):
     for each_row in limits_table_df["description"]:
         
         limits_dict[each_row] = {
-            "mean": limits_table_df.loc[limits_table_df["description"]==each_row, "mean"].values[0],
-            "std": limits_table_df.loc[limits_table_df["description"]==each_row, "std"].values[0],
-            "min": limits_table_df.loc[limits_table_df["description"]==each_row, "min"].values[0],
-            "max": limits_table_df.loc[limits_table_df["description"]==each_row, "max"].values[0],
+            "mean": float(limits_table_df.loc[limits_table_df["description"]==each_row, "mean"].values[0]),
+            "std": float(limits_table_df.loc[limits_table_df["description"]==each_row, "std"].values[0]),
+            "min": float(limits_table_df.loc[limits_table_df["description"]==each_row, "min"].values[0]),
+            "max": float(limits_table_df.loc[limits_table_df["description"]==each_row, "max"].values[0]),
         }
         
         
@@ -162,7 +162,7 @@ def filter_dataframe_by_limits(dataframe, limits_dict):
     filtered_dataframe = dataframe.copy()
     for each_column in dataframe.columns:
         if each_column in limits_dict.keys():
-            filtered_dataframe = filtered_dataframe.loc[(filtered_dataframe[each_column] >= limits_dict[each_column]["min"]) & (filtered_dataframe[each_column] <= limits_dict[each_column]["max"]), :]
+            filtered_dataframe = filtered_dataframe.loc[(filtered_dataframe[each_column] >= float(limits_dict[each_column]["min"])) & (filtered_dataframe[each_column] <= float(limits_dict[each_column]["max"])), :]
         else:
             print(f"column {each_column} not in limits_dict.keys()")
             pass
