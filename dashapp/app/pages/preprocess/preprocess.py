@@ -385,13 +385,12 @@ def create_preprocessing_card_table_content(target_feature, data):
 
 
 
-# callback to use preprocessing_card_table to save spc rules data preprocessing in session store 
+
 
 @dash.callback(
-    [
-        Output("project_data_spc_cleaning_session_store", "data"),
-        Output("project_data_limits_session_store", "data"),
-    ],
+    Output("project_data_spc_cleaning_session_store", "data"),
+    # Output("project_data_limits_session_store", "data"),
+
     Input("preprocessing_table", "data"),
 )
 def save_spc_rules_in_session_store(data):
@@ -400,37 +399,36 @@ def save_spc_rules_in_session_store(data):
     # df = pd.read_json(data, orient="split")
     df = pd.DataFrame(data)
     
-    print(f"save_spc_rules_in_session_store: df: {df}")
-    print("##### update #####")
+    # print(f"save_spc_rules_in_session_store: df: {df}")
+    # print("##### update #####")
 
     spc_cleaning_dict = transform_cleaning_table_in_dict(df)
     
-    # limits_dict = create_limits_dict(df)
-    limits_dict= []
-    
     # print(f"save_spc_rules_in_session_store: spc_cleaning_dict: {spc_cleaning_dict}")
     
-    return spc_cleaning_dict, limits_dict
+    return spc_cleaning_dict
 
 
-# callback to use preprocessing_card_table to save limits in
 
 
-# @dash.callback(
-#     Output("project_data_limits_session_store", "data"),
-#     Input("preprocessing_table", "data"),
-# )
-# def save_limits_in_session_store(data):
-#     print("save_limits_in_session_store_callback")
-#     # read data from table
-#     # df = pd.read_json(data, orient="split")
-#     df = pd.DataFrame(data)
+
+# TODO: callback does not work
+@dash.callback(
+    Output("project_data_limits_session_store", "data"),
+    Input("preprocessing_table", "data"),
+)
+def save_limits_in_session_store(data):
+    print("save_limits_in_session_store_callback")
+    # read data from table
+    # df = pd.read_json(data, orient="split")
+    df = pd.DataFrame(data)
     
-#     limits_dict = create_limits_dict(df)
+    # limits_dict = create_limits_dict(df)
+    limits_dict = None
     
-#     print(f"save_limits_in_session_store: limits_dict: {limits_dict}")
+    print(f"save_limits_in_session_store: limits_dict: {limits_dict}")
     
-#     return limits_dict
+    return limits_dict
 
 
 
@@ -523,10 +521,14 @@ def create_plot_preprocessed_data(dict_target_feature, selected_feature, limits_
 
         
         # # filter data by spc and limits
-        if spc_cleaning_dict is not None :
+        if spc_cleaning_dict is not None:
+            # print(f"create_plot_preprocessed_data: spc_cleaning_dict:")
             output_df = use_spc_cleaning_dict(output_df, spc_cleaning_dict)
-        if limits_dict is not None:
-            output_df = filter_dataframe_by_limits(output_df, limits_dict)
+        # TODO
+        # if limits_dict is not None:
+        #     output_df = filter_dataframe_by_limits(output_df, limits_dict)
+        
+        output_df = output_df.reset_index(drop=True)
 
         
         df = pd.DataFrame(output_df[selected_feature])
