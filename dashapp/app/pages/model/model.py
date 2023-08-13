@@ -209,7 +209,6 @@ def update_data_splitter(data_splitter):
 def update_model_parameters_loading(model_selection):
     output = [
         html.Div([
-            html.H3("Model Parameters"),
             html.P("Select a model to see its parameters"),
         ])
     ]
