@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 
-import Setuptools
+# import Setuptools
 
 import azureml
 import mlflow

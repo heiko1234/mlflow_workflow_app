@@ -35,12 +35,12 @@ project_data_spc_limit_cleaning_session_store = dcc.Store(
 )
 
 # localhost/dashapp/pages_id
-url_base_pathname="/mlflowapp"
+url_base_pathname="/aimate"
 
 app = Dash(
     __name__,
     server = server,
-    url_base_pathname="/mlflowapp/",
+    url_base_pathname="/aimate/",
     use_pages=True
     )
 
