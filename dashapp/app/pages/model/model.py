@@ -8,6 +8,10 @@ import dash
 
 from dash import ctx
 from dash import html, dcc
+
+# import dash daq
+import dash_daq as daq
+
 from dash.dependencies import Input, Output, State
 
 from app.utilities.cards import (
@@ -48,6 +52,21 @@ model_card = html.Div([
                     id="data_splitter",
                 ),
                 html.H3(""),
+                html.Div([
+                    # add toggle switch for advanced parameters
+                    daq.ToggleSwitch(
+                        id='toggle_advanced_parameters',
+                        label=['Advanced Parameters'],
+                        labelPosition='bottom',
+                        # value=False
+                    ),
+                    daq.BooleanSwitch(
+                        id='toggle_local_usage',
+                        label=['Local Usage'],
+                        labelPosition='bottom',
+                        # value=True
+                    ),
+                    ], style={"display": "flex", "justify-content": "space-around"}),
             ],
             style={
                     # "height": "400px"

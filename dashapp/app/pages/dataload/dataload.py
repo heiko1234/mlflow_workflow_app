@@ -14,6 +14,7 @@ from dash import ctx
 from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from dash import dash_table
+from upath import UPath
 
 from app.utilities.cards import (
     standard_card,
@@ -180,34 +181,63 @@ tab_data_upload = html.Div([
             height="500px",
             content=[
                 html.Div([
-                    dcc.Upload(
-                        id="upload_data",
-                        children=html.Div(
-                            [
-                                "Drag and Drop or ",
-                                html.A("Select File")
-                            ]
+                    html.Div([
+                        dcc.Upload(
+                            id="upload_data",
+                            children=html.Div(
+                                [
+                                    "Drag and Drop or ",
+                                    html.A("Select File")
+                                ]
+                            ),
+                            style={
+                                "width": "250px",
+                                "height": "120px",
+                                "lineHeight": "60px",
+                                "borderWidth": "1px",
+                                "borderStyle": "dashed",
+                                "borderRadius": "5px",
+                                "textAlign": "center",
+                                "margin": "10px"
+                            },
+                            # Allo multiple files to be uploaded
+                            multiple=False
                         ),
-                        style={
-                            "width": "250px",
-                            "height": "120px",
-                            "lineHeight": "60px",
-                            "borderWidth": "1px",
-                            "borderStyle": "dashed",
-                            "borderRadius": "5px",
-                            "textAlign": "center",
-                            "margin": "10px"
-                        },
-                        # Allo multiple files to be uploaded
-                        multiple=False
+                    ],
+                    style={
+                        "display": "flex",
+                        "align-items": "center",
+                        "justify-content": "center"
+                        }
                     ),
-                ],
-                style={
-                    "display": "flex",
-                    "align-items": "center",
-                    "justify-content": "center"
-                    }
-                ),
+                    html.Div([
+                        # add download button for standard data for user testing
+                        html.A(
+                            html.Button(
+                                "Download Example Data",
+                                id="download_example_data_button",
+                                style={
+                                    "width": "250px",
+                                    "height": "80px",
+                                    "lineHeight": "60px",
+                                    "borderWidth": "1px",
+                                    "borderStyle": "dashed",
+                                    "borderRadius": "5px",
+                                    "textAlign": "center",
+                                    "margin": "10px"
+                                }
+                            ),
+                            # href="/sampledata/ChemicalManufacturingProcess.parquet",
+                        ),
+                        dcc.Download(id="download_example_data")
+                    ],
+                    style={
+                        "display": "flex",
+                        "align-items": "center",
+                        "justify-content": "center"
+                        }
+                    )
+                ]),
             ],
         )
     ])
@@ -408,6 +438,22 @@ def update_descriptive(df_json):
     return output
 
 
+
+# callback for the download of the ChemcialManufacturingProcess.parquet file
+
+@dash.callback(
+    Output("download_example_data", "data"),
+    [
+        Input("download_example_data_button", "n_clicks")
+    ]
+)
+def download_example_data(n_clicks):
+
+    if n_clicks is None:
+        return None
+    else:
+        df = pd.read_parquet(UPath("sampledata/ChemicalManufacturingProcess.parquet"))
+        return dcc.send_data_frame(df.to_parquet, "ChemicalManufacturingProcess.parquet")
 
 
 

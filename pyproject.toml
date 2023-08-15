@@ -20,7 +20,7 @@ dash-extensions = "^1.0.0"
 dash-core-components = "^2.0.0"
 dash-html-components = "^2.0.0"
 dash-carbon-components = "^0.4.2"
-dash-daq = "^0.5.0"
+dash-daq = "*"
 python-dotenv = "^1.0.0"
 
 
