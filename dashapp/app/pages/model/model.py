@@ -36,7 +36,7 @@ model_card = html.Div([
         id="model_card",
         header_text="Select a Model",
         width="800px",
-        height="500px",
+        height="600px",
         content=[
             html.Div([
                 html.H3("Model Selection"),
@@ -51,22 +51,26 @@ model_card = html.Div([
                 dcc.Dropdown(
                     id="data_splitter",
                 ),
-                html.H3(""),
+                html.H3("", style={"margin": "1em"}),
                 html.Div([
-                    # add toggle switch for advanced parameters
+                    html.H4("Advanced Parameters"),
+                ], style={"margin": "2em"}),
+                html.Div([
                     daq.ToggleSwitch(
                         id='toggle_advanced_parameters',
                         label=['Advanced Parameters'],
                         labelPosition='bottom',
-                        # value=False
+                        value=False,
+                        color="blue"
                     ),
-                    daq.BooleanSwitch(
+                    daq.ToggleSwitch(
                         id='toggle_local_usage',
                         label=['Local Usage'],
                         labelPosition='bottom',
-                        # value=True
+                        value=True,
+                        color="green"
                     ),
-                    ], style={"display": "flex", "justify-content": "space-around"}),
+                    ], style={"display": "flex", "justify-content": "space-around", "margin": "1em"}),
             ],
             style={
                     # "height": "400px"
@@ -83,7 +87,7 @@ model_parameters_card = html.Div([
         id="model_parameters_card",
         header_text="Model Parameters",
         width="800px",
-        height="500px",
+        height="600px",
         content=[
             html.Div([
                 html.H3("Model Parameters"),
@@ -109,7 +113,7 @@ model_parameters_card = html.Div([
 
 layout = html.Div(
     children=[
-        html.H1(children='This is our model page'),
+        html.H1(children='Make an AI Model'),
         # html.Div(children='''
         #     This is our template page content.
         #     '''),
