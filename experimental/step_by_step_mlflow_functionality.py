@@ -124,6 +124,10 @@ def make_minmaxscalingtable_by_descriptiontable(descriptiontable, expand_by=None
 new_minmaxscalingdf = make_minmaxscalingtable_by_descriptiontable(descriptiontable=datatable, expand_by="std")
 new_minmaxscalingdf
 
+# >>> new_minmaxscalingdf
+#    Yield  BioMaterial1  BioMaterial2  ProcessValue1
+# 0   47.5           7.0          10.5          25.00
+# 1   39.0           0.0           4.5          -3.34
 
 
 new_minmaxscalingdf = make_minmaxscalingtable_by_descriptiontable(descriptiontable=datatable, expand_by=None)
