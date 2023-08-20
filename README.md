@@ -28,7 +28,9 @@
 ![data_selection](./assets/data_select_overview2.png)
 
 
+### Modeling
 
+![model_page](./assets/model_page.png)
 
 
 
