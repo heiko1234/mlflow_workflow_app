@@ -140,6 +140,24 @@ new_minmaxscalingdf
 
 
 
+
+
+def create_data_minmax_dict(data):
+
+    feature_data_minmax = data.describe().loc[["min", "max"], :]
+
+    return feature_data_minmax.to_dict()
+
+
+
+
+
+data_minmax_dict = create_data_minmax_dict(new_minmaxscalingdf)
+data_minmax_dict
+# {'Yield': {'min': 40.0, 'max': 46.5}, 'BioMaterial1': {'min': 1.0, 'max': 6.0}, 'BioMaterial2': {'min': 5.0, 'max': 10.0}, 'ProcessValue1': {'min': 1.66, 'max': 20.0}}
+
+
+
 from sklearn.preprocessing import MinMaxScaler
 
 instance_minmaxscaler_new = MinMaxScaler()
@@ -181,6 +199,301 @@ fitted_df_new
 #        [1.        , 0.5       , 0.        , 0.44444444],
 #        [0.        , 0.        , 0.71428571, 0.38888889],
 #        [0.3559322 , 1.        , 1.        , 0.        ]])
+
+
+
+
+
+
+
+
+
+
+y_train = fitted_df["Yield"]
+x_train = fitted_df.drop("Yield", axis=1)
+
+y_train
+x_train
+
+
+df
+y_train = df["Yield"]
+x_train = df.drop("Yield", axis=1)
+
+y_train
+x_train
+
+
+
+
+from sklearn.model_selection import train_test_split
+
+
+target_data = y_train
+feature_data = x_train
+
+
+test_size = 0.2  # 20% test data, 80% train data
+random_state = 2023  # random seed
+
+(
+    features_train,
+    features_test,
+    target_train,
+    target_test,
+) = train_test_split(
+    feature_data,
+    target_data,
+    test_size=test_size,
+    random_state=random_state,
+    )
+
+
+
+
+
+
+
+pandas_dtypes = {
+    "float64": "float",
+    "int64": "integer",
+    "bool": "boolean",
+    "double": "double",
+    "object": "string",
+    "binary": "binary",
+}
+
+
+
+def create_feature_dtype_dict(data, pandas_dtypes):
+    output = {}
+
+    for element in data.columns:
+        output[element] = pandas_dtypes[str(data.dtypes[element])]
+
+    return output
+
+
+
+
+feature_dtypes_dict = create_feature_dtype_dict(
+    data = feature_data,
+    pandas_dtypes = pandas_dtypes)
+
+
+
+
+from mlflow.models.signature import ModelSignature
+from mlflow.types.schema import Schema, ColSpec
+
+input_schema = Schema(
+    [
+        ColSpec(
+            pandas_dtypes[str(feature_data.dtypes[element])], element
+        )
+        for element in feature_data.columns
+    ]
+)
+output_schema = Schema(
+    [ColSpec(pandas_dtypes[str(target_data.dtypes)])]
+)
+signature = ModelSignature(inputs=input_schema, outputs=output_schema)
+
+
+
+
+
+input_schema
+output_schema
+
+signature
+
+
+
+
+
+
+import mlflow
+import mlflow.sklearn
+
+# mlflow.tracking.get_tracking_uri()
+# 'file:///home/heiko/Schreibtisch/Repos/dash_apps/mlflow_workflow_app/mlruns'
+
+
+# mlflow.set_registry_uri("sqlite:///mlflow.db")
+
+
+MLFlow_Experiment = "Project_name"
+
+
+# import variables from .env file
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
+
+
+
+local_run = os.getenv("LOCAL_RUN", False)
+connection_string = os.getenv("AZURE_STORAGE_CONNECTION_STRING")
+container_name = os.getenv("BLOB_MODEL_CONTAINER_NAME")
+
+
+local_run
+
+
+
+
+mlflow.set_experiment(MLFlow_Experiment)
+
+mlflow.is_tracking_uri_set()
+
+
+
+
+from sklearn.linear_model import LinearRegression
+
+sk_model = LinearRegression()
+
+
+
+
+
+# from sklearn.pipeline import Pipeline
+
+
+# instance_minmaxscaler_new   # scaler
+# sk_model.fit(features_train, target_train)
+
+
+# model_pipeline = Pipeline(steps=[("scaler", scaler), ("model", sk_model_out)])
+
+
+
+features_train
+target_train
+
+
+with mlflow.start_run():
+
+    sk_model.fit(features_train, target_train)
+
+    train_score = round(sk_model.score(features_train, target_train), 4)
+    train_score
+
+
+    mlflow.log_params(sk_model.get_params())
+    mlflow.log_metric("train_score", train_score)
+
+    round(sk_model.score(features_test, target_test), 4)
+
+    mlflow.sklearn.log_model(
+        sk_model, "model", signature=signature
+    )
+    
+    mlflow.log_dict(
+        data_minmax_dict, "model/feature_limits.json"
+    )
+    
+    
+    mlflow.log_dict(
+        feature_dtypes_dict, "model/feature_dtypes.json"
+    )
+
+
+mlflow.end_run()
+
+
+
+
+# mlflow.sklearn.log_model(
+#     model_pipe, "model", signature=signature
+# )
+
+# mlflow.set_tag("model_type", model)
+# mlflow.set_tag("scaler", scaler)
+
+# mlflow.set_tag("target", configuration["target"])
+# mlflow.set_tag("features", configuration["features"])
+
+# mlflow.set_tag("model_parameters", model_parameter_dict)
+
+# mlflow.log_dict(
+#     data_minmax_dict, "model/feature_limits.json"
+# )
+# mlflow.log_dict(
+#     model_parameter_dict, "model/model_parameters.json"
+# )
+# mlflow.log_dict(
+#     feature_dtypes_dict, "model/feature_dtypes.json"
+# )
+
+
+
+
+
+# https://mlflow.org/docs/latest/model-registry.html
+
+
+
+from pathlib import PurePosixPath
+
+
+def get_mlflow_model(model_name, azure=True, staging="Staging"):
+
+    if azure:
+        azure_model_dir = os.getenv("MLFLOW_MODEL_DIRECTORY", "models:/")
+        if staging == "Staging":
+            model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Staging")
+            artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
+        elif staging == "Production":
+            model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Production")
+            artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
+        else:
+            print("Staging must be either 'Staging' or 'Production'. Default: Staging")
+            model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Staging")
+            artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
+        
+        artifact_path
+
+        model = mlflow.pyfunc.load_model(str(artifact_path))
+        print(f"Model {model_name} loaden from Azure: {artifact_path}")
+        
+    return model
+
+
+
+
+
+from mlflow import MlflowClient
+
+
+client = MlflowClient()
+for rm in client.search_registered_models():
+    print(rm.name, rm.description, rm.tags)
+
+
+# >>> for rm in client.search_registered_models():
+# ...     print(rm.name, rm.description, rm.tags)
+# ... 
+# project_name  {}
+
+
+# after model is registered, it can be loaded from registry
+
+
+
+
+
+pn_model = get_mlflow_model(model_name= "project_name", azure=True,  staging="Staging")
+
+
+
+
+
+
+
 
 
 
