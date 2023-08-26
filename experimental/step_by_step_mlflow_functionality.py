@@ -467,17 +467,28 @@ def get_mlflow_model(model_name, azure=True, staging="Staging"):
 
 
 from mlflow import MlflowClient
+import os
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 client = MlflowClient()
+
 for rm in client.search_registered_models():
+    print(rm.name)
     print(rm.name, rm.description, rm.tags)
+
+
 
 
 # >>> for rm in client.search_registered_models():
 # ...     print(rm.name, rm.description, rm.tags)
 # ... 
 # project_name  {}
+
+# project_name
 
 
 # after model is registered, it can be loaded from registry
@@ -490,7 +501,7 @@ pn_model = get_mlflow_model(model_name= "project_name", azure=True,  staging="St
 
 
 
-
+pn_model.predict(features_test)
 
 
 
