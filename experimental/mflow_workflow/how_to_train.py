@@ -110,10 +110,17 @@ new_minmaxscalingdf
 
 
 def create_data_minmax_dict(data):
+    
+    if isinstance(data, pd.DataFrame):
 
-    feature_data_minmax = data.describe().loc[["min", "max"], :]
+        feature_data_minmax = data.describe().loc[["min", "max"], :]
 
-    return feature_data_minmax.to_dict()
+        output = feature_data_minmax.to_dict()
+    
+    else:
+        output = {data.name: {"min": data.min(), "max": data.max()}}
+    
+    return output
 
 
 
@@ -123,6 +130,25 @@ data_minmax_dict = create_data_minmax_dict(new_minmaxscalingdf)
 data_minmax_dict
 
 # {'Yield': {'min': 40.1, 'max': 46.0}, 'BioMaterial1': {'min': 1.0, 'max': 6.0}, 'BioMaterial2': {'min': 5.0, 'max': 12.0}, 'ProcessValue1': {'min': 2.0, 'max': 20.0}}
+
+
+df[features]
+
+feature_minmax_dict = create_data_minmax_dict(df[features])
+feature_minmax_dict
+
+
+
+df[target]
+
+target_minmax_dict = create_data_minmax_dict(df[target])
+target_minmax_dict
+
+
+# make a dataframe from a series
+# https://stackoverflow.com/questions/17839973/construct-pandas-dataframe-from-items-in-nested-dictionary
+
+
 
 
 
@@ -344,6 +370,10 @@ features_train
 target_train
 
 
+
+
+
+
 with mlflow.start_run():
 
     sk_model.fit(features_train, target_train)
@@ -367,8 +397,16 @@ with mlflow.start_run():
     )
     
     mlflow.log_dict(
-        data_minmax_dict, "model/feature_limits.json"
+        data_minmax_dict, "model/data_limits.json"
     )
+    mlflow.log_dict(
+        feature_minmax_dict, "model/feature_limits.json"
+    )
+    
+    mlflow.log_dict(
+        target_minmax_dict, "model/target_limits.json"
+    )
+    
     
     
     mlflow.log_dict(
