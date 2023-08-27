@@ -62,5 +62,33 @@ set MLFLOW_TRACKING_URI=http://localhost:5000
 
 
 
+Azure Blob Storage is optimized for storing massive amounts of unstructured data. Unstructured data is data that doesn't adhere to a particular data model or definition, such as text or binary data. Blob storage offers three types of resources:
+
+    The storage account
+    A container in the storage account
+    A blob in the container
+
+The following diagram shows the relationship between these resources:
+
+Diagram of Blob storage architecture
+![blob_pic](./assets/blob1.png)
+
+Use the following Python classes to interact with these resources:
+
+    BlobServiceClient: The BlobServiceClient class allows you to manipulate Azure Storage resources and blob containers.
+    ContainerClient: The ContainerClient class allows you to manipulate Azure Storage containers and their blobs.
+    BlobClient: The BlobClient class allows you to manipulate Azure Storage blobs.
+
+
+
+
+
+
+
+
+
+
+
+
 
 

@@ -516,8 +516,17 @@ output = target_minmaxscaler.inverse_transform(df_predictions.reshape(-1, 1))
 
 output
 
+
+
+output[0][0]
+# >>> output[0][0]
+# 43.999999872898805
+
+
+
 output = pd.DataFrame(output, columns = [target])
 output
+
 
 # >>> output
 # array([[43.99999987]])
@@ -531,7 +540,9 @@ output
 
 
 
-
+output.iloc[0,0]
+# >>> output.iloc[0,0]
+# 43.999999872898805
 
 
 
