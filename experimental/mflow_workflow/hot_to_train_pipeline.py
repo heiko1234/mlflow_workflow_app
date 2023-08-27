@@ -396,6 +396,9 @@ sk_model.score(features_train, target_train)
 
 
 
+# FAzit: so geht das jedenfalls nicht
+
+
 features_train
 target_train
 

@@ -82,6 +82,52 @@ model_card = html.Div([
 ])
 
 
+
+
+# create a button to submit the form
+Model_submit= html.Div(
+    children=[
+        html.Button('Start Modelling',
+            className="submit_button",
+            id='submit-model',
+            n_clicks=0,
+        )
+    ],
+    style={
+        "display": "flex",
+        "justify-content": "center",
+        "margin": "20px",
+    }
+)
+
+
+# submit_card = html.Div([
+#     standard_card(
+#         id="submit_card",
+#         header_text="Submit Model",
+#         width="400px",
+#         height="200px",
+#         content=[
+#             html.Div(
+#                 children=[
+#                     html.Button('Submit',
+#                         className="submit_button",
+#                         id='submit-model',
+#                         n_clicks=0,
+#                     )
+#                 ],
+#                 style={
+#                     "display": "flex",
+#                     "justify-content": "center",
+#                     "margin": "20px",
+#                 }
+#             )
+#         ]
+#     )
+# ])
+
+
+
 model_parameters_card = html.Div([
     standard_card(
         id="model_parameters_card",
@@ -106,6 +152,9 @@ model_parameters_card = html.Div([
 ])
 
 
+
+
+
 # create a card with an icon and text to start modelling
 # start_modelling_process_card
 
@@ -118,18 +167,23 @@ layout = html.Div(
         #     This is our template page content.
         #     '''),
         html.Div([
-            model_card,
-            model_parameters_card,
-        ],
-        style={
-            "display": "flex",
-            "align-items": "center",
-            "justify-content": "center"
-        },
-        ),
-    ]
+            html.Div([
+                model_card,
+                model_parameters_card,
+            ],
+            style={
+                "display": "flex",
+                "align-items": "center",
+                "justify-content": "center"
+                },
+            ),
+        ]),
+        Model_submit
+        # html.Div([
+        #     submit_card
+        # ])
+    ],
 )
-
 
 
 

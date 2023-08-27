@@ -441,6 +441,29 @@ def control_chart_marginal(data, y_name, xlabel= None, title = "Controlchart", l
 
 
 
+def validation_plot(df_original, df_predicted): 
+
+    try:
+
+        fig_output = make_subplots(rows=2, cols=1, row_heights=[0.75, 0.25], vertical_spacing=0.025, shared_xaxes=True)
+
+
+        # Main plot
+        fig_output.add_trace(go.Scatter(x=df_original.index, y=df_original, mode='markers', marker=dict(color='blue', size = 12), name='original'), row=1, col=1)
+        fig_output.add_trace(go.Scatter(x=df_predicted.index, y=df_predicted, mode='markers', marker=dict(color='red', size = 12), name='prediction'), row=1, col=1)
+
+        # Residuals
+        diff = df_original - df_predicted
+        fig_output.add_trace(go.Scatter(x=diff.index, y=diff, mode='markers', marker=dict(color='black', size = 12), name='diff'), row=2, col=1)
+        fig_output.update_layout(title='Original vs. Predicted Values', xaxis_title='Time', yaxis_title='Index')
+
+    except Exception as e:
+        print(e)
+        fig_output = None
+
+    return fig_output
+
+
 
 
 

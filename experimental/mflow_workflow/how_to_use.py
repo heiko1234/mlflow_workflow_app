@@ -113,6 +113,24 @@ mlflow_model
 # run_id: 2791a41295c94ae29b7e37efbb60c2d9
 
 
+
+
+
+mlflow_model.metadata.artifact_path
+# model
+mlflow_model.metadata.run_id
+# 'bf9ef49af857426c81fc82fce0bbd2c9'
+
+mlflow_model.metadata.get_input_schema()
+# >>> mlflow_model.metadata.get_input_schema()
+# ['BioMaterial1': float, 'BioMaterial2': float, 'ProcessValue1': integer]
+
+
+mlflow_model.metadata.get_output_schema()
+# [float]
+
+
+
 # load dictionary artifact from mlflow model
 # https://stackoverflow.com/questions/67631/how-to-import-a-module-given-the-full-path
 

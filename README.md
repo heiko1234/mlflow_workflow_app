@@ -82,7 +82,7 @@ Use the following Python classes to interact with these resources:
 
 
 
-
+https://learn.microsoft.com/en-us/azure/storage/blobs/storage-quickstart-blobs-python?tabs=managed-identity%2Croles-azure-portal%2Csign-in-azure-cli
 
 
 
