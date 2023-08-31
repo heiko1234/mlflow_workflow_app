@@ -126,6 +126,8 @@ mlflow_model.metadata.get_input_schema()
 # ['BioMaterial1': float, 'BioMaterial2': float, 'ProcessValue1': integer]
 
 
+
+
 mlflow_model.metadata.get_output_schema()
 # [float]
 
@@ -177,6 +179,19 @@ from pathlib import Path
 
 from azure.storage.blob import BlobServiceClient
 
+
+# mlflow.artifacts.load_dict("feature_limits.json")   # nope
+
+
+model_dir="models:"
+model_name="project_name"
+model_stage="Staging"
+artifact_path = PurePosixPath(model_dir).joinpath(model_name, model_stage)
+artifact_path
+artifact_path = str(artifact_path)
+artifact_path = artifact_path+"/feature_dtypes.json"
+artifact_path
+mlflow.artifacts.load_dict(artifact_path)
 
 
 
@@ -269,6 +284,49 @@ def get_model_json_artifact(
 
 
 
+
+def get_model_json_artifact_by_model(model_name, stage="Staging", features="feature_dtypes.json"):
+    
+    model_dir="models:"
+    
+    artifact_path = PurePosixPath(model_dir).joinpath(model_name, model_stage)
+    
+    path_to_file = str(artifact_path)+"/"+features
+    
+    output = mlflow.artifacts.load_dict(path_to_file)
+    
+    return output
+
+
+
+feature_dtypes=get_model_json_artifact_by_model(
+    model_name="project_name",
+    stage="Staging",
+    features="feature_dtypes.json",
+)
+feature_dtypes
+
+
+
+feature_limits=get_model_json_artifact_by_model(
+    model_name="project_name",
+    stage="Staging",
+    features="feature_limits.json",
+)
+feature_limits
+
+
+
+target_limits=get_model_json_artifact_by_model(
+    model_name="project_name",
+    stage="Staging",
+    features="target_limits.json",
+)
+target_limits
+
+
+
+# ################### #
 
 feature_dtypes=get_model_json_artifact(
     azure=True,
