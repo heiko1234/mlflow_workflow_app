@@ -161,6 +161,19 @@ class mlflow_model():
         
         return features
     
+    def validate_data_columns(self, data):
+        
+        features = self.get_features()
+        
+        data_columns = list(data.columns)
+        
+        elements_to_test = [list_element for list_element in features if list_element in data_columns]
+        
+        if features == elements_to_test:
+            return True
+        else:
+            return False
+    
     def make_predictions(self, data):
         
         features = self.get_features()
@@ -171,18 +184,30 @@ class mlflow_model():
         print(f"features: {features}")
         
         try:
-            scale_data = data[features]
-            feature_data_scaled = feature_scaler.transform(scale_data)
-            feature_data_scaled_df = pd.DataFrame(feature_data_scaled, columns=features)
-            feature_data_scaled_df = self.decode_df_mlflow_dtype(feature_data_scaled_df, dtype=feature_dtypes)
-            
-            df_predictions = self.model.predict(feature_data_scaled_df)
-            
-            output = target_scaler.inverse_transform(df_predictions)
-            
-            output = list(output.flatten())
+            if self.validate_data_columns(data):
+                scale_data = data[features]
+                feature_data_scaled = feature_scaler.transform(scale_data)
+                feature_data_scaled_df = pd.DataFrame(feature_data_scaled, columns=features)
+                feature_data_scaled_df = self.decode_df_mlflow_dtype(feature_data_scaled_df, dtype=feature_dtypes)
+                
+                df_predictions = self.model.predict(feature_data_scaled_df)
+                
+                output = target_scaler.inverse_transform(df_predictions)
+                
+                output = list(output.flatten())
 
-            return output
+                return output
+            
+            else:
+                features = self.get_features()
+                data_columns = list(data.columns)
+                
+                missing_features = list(set(features) - set(data_columns))
+                
+                print(f"Missing features: {missing_features}")
+                
+                raise ValueError
+
         
         except BaseException as e:
             print(e)
@@ -190,65 +215,5 @@ class mlflow_model():
 
 
 
-
-
-
-
-
-df = pd.DataFrame()
-
-df["Yield"] = [44.0, 43.0, 46.0, 40.1, 42.2]
-df["BioMaterial1"]=[5.5, 4.5, 3.5, 1.0, 6.0]
-df["BioMaterial2"]=[9.5, 9, 5, 10, 12]
-df["ProcessValue1"] = [20, 15, 10, 9, 2]
-
-
-target = "Yield"
-
-features = ["BioMaterial1", "BioMaterial2", "ProcessValue1"]
-
-
-
-df[features]
-
-
-my_mlflow_model = mlflow_model(model_name="project_name", staging="Staging")
-
-
-
-my_mlflow_model.list_registered_models()
-
-my_mlflow_model.get_model_version()
-
-my_mlflow_model.get_model()
-
-my_mlflow_model.get_features()
-
-my_mlflow_model.get_model_artifact(artifact="feature_dtypes.json")
-
-my_mlflow_model.get_model_artifact(artifact="feature_limits.json")
-
-my_mlflow_model.get_model_artifact(artifact="target_limits.json")
-
-
-my_mlflow_model.get_feature_minmaxscaler()
-
-
-my_mlflow_model.make_predictions(df)
-
-
-df["prediction"] = my_mlflow_model.make_predictions(df)
-
-df
-
-
-
-
-
-df_single = df.iloc[0, :]
-df_single = pd.DataFrame(df_single).T
-df_single
-
-my_mlflow_model.make_predictions(df_single)[0]
 
 
