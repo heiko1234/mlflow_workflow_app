@@ -162,48 +162,56 @@ def get_model_download_options(value):
 
 @dash.callback(
     Output("output_validation", "children"),
+    Output("project_model_name_session_store", "data"),
     Input("model_download_dd", "value"),
     Input("plot_toggle", "value"),
     State("data_session_store", "data"),
 )
 def make_validation_graphic(model_name, plot_mode, data):
         
-        try:
+    try:
 
 
-            mlflow_model = get_mlflow_model(model_name=model_name, azure=True, staging="Staging")
-            
-            
-            print(mlflow_model)
-
-            df = pd.read_json(data, orient="split")
-            
-            print(df)
-            
-            df_predict = df
-            
-            df_predict["Yield"] = df["Yield"]
-            
-            df_predict["Yield validation"] = df_predict["Yield"]-0.5
-            
-            # print(df_predict)
-            
-            # df_predict["Yield validation"] = mlflow_model.predict(df_predict)
-            
-            if plot_mode == False:
-            
-                fig = validation_plot(df_predict["Yield"], df_predict["Yield validation"])
-                
-                return dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
-            
-            else:
-                fig = x_y_plot(df_predict["Yield"], df_predict["Yield validation"])
-                
-                return dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
+        mlflow_model = get_mlflow_model(model_name=model_name, azure=True, staging="Staging")
         
-        except Exception as e:
-            print(e)
-            return None
+        
+        print(mlflow_model)
+
+        df = pd.read_json(data, orient="split")
+        
+        print(df)
+        
+        df_predict = df
+        
+        target = "Yield"
+        
+        df_predict[target] = df[target]
+        
+        target_string = target+"_validation"
+        
+        df_predict[target_string] = df_predict[target]-0.5
+        
+        # print(df_predict)
+        
+        # df_predict["Yield validation"] = mlflow_model.predict(df_predict)
+        
+        if plot_mode == False:
+        
+            fig = validation_plot(df_predict[target], df_predict[target_string])
+            
+            output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
+        
+        else:
+            fig = x_y_plot(df_predict[target], df_predict[target_string])
+            
+            output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
+    
+    except Exception as e:
+        print(e)
+        output = None
+        
+    return output, model_name
+        
 
 
 

@@ -33,6 +33,11 @@ dash.register_page(__name__,"/analysis")
 # )
 
 
+
+
+
+
+
 layout = html.Div(
     id="analysis_page_content",
     className="analysis_page_content",
