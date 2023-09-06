@@ -2,6 +2,7 @@
 
 import dash
 from dash import Dash, html, dcc
+from dash.long_callback import DiskcacheLongCallbackManager
 
 from app.utilities.sidebar_utils import (
     icon_and_text
@@ -9,6 +10,12 @@ from app.utilities.sidebar_utils import (
 
 
 from flask import Flask
+
+# longcallbacks
+# diskcache
+import diskcache
+cache = diskcache.Cache("./cache")
+long_callback_manager = DiskcacheLongCallbackManager(cache)
 
 
 

@@ -878,6 +878,17 @@ pandas = ["pandas (<2)"]
 pyspark = ["delta-spark", "numpy (==1.22.2)", "pyspark"]
 
 [[package]]
+name = "diskcache"
+version = "5.6.3"
+description = "Disk Cache -- Disk and file backed persistent cache."
+optional = false
+python-versions = ">=3"
+files = [
+    {file = "diskcache-5.6.3-py3-none-any.whl", hash = "sha256:5e31b2d5fbad117cc363ebaf6b689474db18a1f6438bc82358b024abd4c2ca19"},
+    {file = "diskcache-5.6.3.tar.gz", hash = "sha256:2c3a3fa2743d8535d832ec61c2054a1641f41775aa7c556758a109941e33e4fc"},
+]
+
+[[package]]
 name = "distlib"
 version = "0.3.7"
 description = "Distribution utilities"
@@ -3233,4 +3244,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">3.10.10,<3.11"
-content-hash = "a46d76ebce1480cc566f73490dcea1967d9e1f0fcac9e0deebe913245e9dc240"
+content-hash = "181a9bf83dd118d79247a7f86d9eb186f03fd3ea0844fceaa03d47ebfcb06906"
