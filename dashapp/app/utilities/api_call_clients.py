@@ -101,7 +101,7 @@ class APIBackendClient:
             
             print(f"use docker base_url for backend service connect via docker network: {base_url}")
             
-        self._client = BackendClient(base_url=base_url)
+        self.Backendclient = BackendClient(base_url=base_url)
 
 
 

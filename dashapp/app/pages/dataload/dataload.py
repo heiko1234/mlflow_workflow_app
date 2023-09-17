@@ -22,6 +22,11 @@ from app.utilities.cards import (
 )
 
 
+from app.utilities.api_call_clients import APIBackendClient
+
+
+dataclient=APIBackendClient()
+
 
 
 dash.register_page(__name__,"/dataload")
@@ -296,6 +301,12 @@ tab_data_load = html.Div(
 ])
 
 
+
+
+
+
+
+
 # callback to show up tab_data_upload and tab_data_load when selecting the tab
 @dash.callback(
     Output('data_tabs_content', 'children'),
@@ -460,19 +471,111 @@ def download_example_data(n_clicks):
 
 # callback to populate the dropdowns for the blobstorage environment
 
-# @dash.callback(
-#     Output('blobstorage_environment', 'options'),
-#     [Input('blobstorage_environment', 'value')]
-# )
-# def populate_blobstorage_environment(value):
-#     # if value is None:
-
-#     # else:
-#     #     return [
-#     #         {"label": "blobstorage_environment_1", "value": "blobstorage_environment_1"},
-#     #     ]
+@dash.callback(
+    Output('blobstorage_environment', 'options'),
+    [Input('blobstorage_environment', 'value')]
+)
+def populate_blobstorage_environment(value):
+    
+    
+    headers = None
+    endpoint = "list_available_accounts"
 
 
+    response = dataclient.Backendclient.execute_get(
+        headers=headers,
+        endpoint=endpoint,
+        )
+    
+    if response.status_code == 200:
+        output = response.json()
+        
+        if isinstance(output, list):
+            value = output
+        else:
+            value = [output]
+    
+    
+    else:
+        value = None
+        output = None
+
+    if value is not None:
+        
+        output = [
+            {"label": i, "value": i} for i in value
+        ]
+
+    return output
+
+
+
+@dash.callback(
+    Output('container_name', 'options'),
+    [
+        Input('blobstorage_environment', 'value'),
+        Input('container_name', 'value'),
+    
+    ]
+)
+def populate_blobstorage_container(blobstorage_environment, container_name):
+    
+    
+    value = ["chemical-data", "model-container"]
+
+    output = [
+        {"label": i, "value": i} for i in value
+    ]
+
+    return output
+
+
+
+
+
+
+@dash.callback(
+    Output('subcontainer_name', 'options'),
+    [
+        Input('blobstorage_environment', 'value'),
+        Input('container_name', 'value'),
+        Input('subcontainer_name', 'value'),
+    ]
+)
+def populate_subblobstorage_container(blobstorage_environment, container_name, subcontainer_name):
+    
+    
+    value = ["chemical-data", "model-container"]
+
+    output = [
+        {"label": i, "value": i} for i in value
+    ]
+
+    return output
+
+
+
+
+
+@dash.callback(
+    Output('file_name', 'options'),
+    [
+        Input('blobstorage_environment', 'value'),
+        Input('container_name', 'value'),
+        Input('subcontainer_name', 'value'),
+        Input('file_name', 'value'),
+    ]
+)
+def populate_file_name(blobstorage_environment, container_name, subcontainer_name, file_name):
+    
+    
+    value = ["ChemicalManufacturingProcess.parquet"]
+
+    output = [
+        {"label": i, "value": i} for i in value
+    ]
+
+    return output
 
 
 

@@ -56,6 +56,14 @@ def transform_cleaning_table_in_dict(dataframe):
     return dict
 
 
+def create_data_transformng_dict(dataframe):
+    
+    dict = {}
+    
+    for element_in_description in dataframe["description"].unique():
+        dict[element_in_description] = dataframe.loc[dataframe["description"]==element_in_description, "transforming"].values[0]
+        
+    return dict
 
 
 
