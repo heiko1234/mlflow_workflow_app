@@ -23,6 +23,7 @@ from app.utilities.plots import (
 
 from app.utilities.spc import (
     transform_cleaning_table_in_dict,
+    create_data_transformng_dict,
     use_spc_cleaning_dict,
     create_limits_dict,
     update_nested_dict,
@@ -458,10 +459,11 @@ def create_preprocessing_card_table_content(target_feature, data_dict):
     Input("preprocessing_table", "data"),
 )
 def save_spc_rules_in_session_store(data):
+    print(f"save_spc_rules_in_session_store triggered")
 
     df = pd.DataFrame(data)
     spc_cleaning_dict = transform_cleaning_table_in_dict(df)
-    print(f"save_spc_rules_in_session_store: spc_cleaning_dict: {spc_cleaning_dict}")
+    # print(f"save_spc_rules_in_session_store: spc_cleaning_dict: {spc_cleaning_dict}")
 
     return spc_cleaning_dict
 
@@ -469,12 +471,13 @@ def save_spc_rules_in_session_store(data):
 
 
 
-# TODO: callback does not work
+# not working
 @dash.callback(
     Output("project_data_spc_limit_cleaning_session_store", "data"),
     Input("preprocessing_table", "data"),
 )
 def save_limits_in_session_store(data):
+    print(f"save_limits_in_session_store triggered")
 
     df = pd.DataFrame(data)
     limits_dict = create_limits_dict(df)
@@ -482,6 +485,26 @@ def save_limits_in_session_store(data):
     # print(f"save_limits_in_session_store: limits_dict: {limits_dict}")
 
     return limits_dict
+
+
+
+
+# not working
+@dash.callback(
+    Output("project_data_spc_transformation_cleaning_session_store", "data"),
+    Input("preprocessing_table", "data"),
+)
+def save_data_transforming_in_session_store(data):
+    print(f"save_data_transforming_in_session_store triggered")
+
+    df = pd.DataFrame(data)
+    # print(f"save_data_transforming_in_session_store triggered: {df}")
+    data_transforming_dict = create_data_transformng_dict(df)
+
+    # print(f"save_data_transforming_in_session_store: data_transforming_dict: {data_transforming_dict}")
+
+    return data_transforming_dict
+
 
 
 
@@ -541,77 +564,99 @@ def create_plot_preprocessed_data(target_feature):
     Input("preprocessing_card_cleaned_data_dropdown", "value"),
     Input("project_data_spc_cleaning_session_store", "data"),
     Input("project_data_spc_limit_cleaning_session_store", "data"),
+    Input("project_data_spc_transformation_cleaning_session_store", "data"),
     State("data_session_store", "data"),
 )
-def create_plot_preprocessed_data(dict_target_feature, selected_feature, spc_cleaning_dict, limits_dict, data):
+def create_plot_preprocessed_data(dict_target_feature, selected_feature, spc_cleaning_dict, limits_dict, transformation_dict, data_dict):
 
-    # read data from data_table_session_store
+    print(f"create_plot_preprocessed_data triggered")
 
-    if data is None or len(data) == 0:
-        print(f"create_plot_preprocessed_data: data is None")
-        return html.Div(
-            [
-                html.H3("Please select a target feature in the Analysis page.")
-            ]
-        )
-    else:
-        # read data
-        # read data from data_session_store
-        df = pd.read_json(data, orient="split")
-
+    if dict_target_feature is None or len(dict_target_feature) == 0:
         dd_list = []
         dd_list.append(dict_target_feature["target"])
         dd_list.extend(dict_target_feature["features"])
 
         output_df = df[dd_list]
-        
+
         # TODO: data load and data spc cleaning and limis filtering should be done in the backend
 
+    if data_dict is None:
+        return None
 
-        # # filter data by spc and limits
+    else:
 
-        if spc_cleaning_dict is not None:
-            # print(f"create_plot_preprocessed_data: spc_cleaning_dict:")
-            output_df = use_spc_cleaning_dict(output_df, spc_cleaning_dict)
-        if limits_dict is not None:
-            # print(f"create_plot_preprocessed_data: limits_dict:")
-            output_df = filter_dataframe_by_limits(output_df, limits_dict)
+        headers = None
+        endpoint = "data_load_and_clean"
 
-        output_df = output_df.reset_index(drop=True)
-
-        df = pd.DataFrame(output_df[selected_feature])
-
-        lower_spec_limit = limits_dict[selected_feature]["min"]
-        upper_spec_limit = limits_dict[selected_feature]["max"]
-
-        fig = control_chart(
-            data=output_df,
-            y_name=selected_feature,
-            xlabel= None,
-            title = "Controlchart",
-            lsl = lower_spec_limit,
-            usl = upper_spec_limit,
-            outliers = True,
-            annotations = True,
-            lines = True,
-            nelson=True,
-            mean = None,
-            sigma = None,
-            markersize = 6,
-            show=False)
+        data_statistics_dict = {
+            "blobcontainer": data_dict["blobcontainer"],
+            "subcontainer": data_dict["subcontainer"],
+            "file_name": data_dict["file_name"],
+            "account": data_dict["account"],
+            "features": dd_list,
+            "spc_cleaning_dict": spc_cleaning_dict,
+            "limits_dict": limits_dict,
+            "transformation_dict": transformation_dict
+        }
 
 
-        output = dcc.Graph(
-            id="preprocessing_card_cleaned_data_loading_analysisplot",
-            figure=fig,
-            style={
-                "width": "1600px",
-                "height": "650px",
-                "justify-content": "center",
-                }
-        )
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
 
-        return output
+
+        if response.status_code == 200:
+            output = response.json()
+
+            output_df = pd.read_json(output, orient='split')
+
+            # print(output_df)
+
+
+            output_df = output_df.reset_index(drop=True)
+
+            df = pd.DataFrame(output_df[selected_feature])
+
+            lower_spec_limit = limits_dict[selected_feature]["min"]
+            upper_spec_limit = limits_dict[selected_feature]["max"]
+
+            fig = control_chart(
+                data=output_df,
+                y_name=selected_feature,
+                xlabel= None,
+                title = "Controlchart",
+                lsl = lower_spec_limit,
+                usl = upper_spec_limit,
+                outliers = True,
+                annotations = True,
+                lines = True,
+                nelson=True,
+                mean = None,
+                sigma = None,
+                markersize = 6,
+                show=False)
+
+
+            output = dcc.Graph(
+                id="preprocessing_card_cleaned_data_loading_analysisplot",
+                figure=fig,
+                style={
+                    "width": "1600px",
+                    "height": "650px",
+                    "justify-content": "center",
+                    }
+            )
+
+            return output
+
+        else:
+            return html.Div(
+                [
+                    html.H3("Problem with data loading.")
+                ]
+            )
 
 
 
