@@ -21,6 +21,11 @@ from app.utilities.plots import (
     control_chart_marginal
 )
 
+from app.utilities.api_call_clients import APIBackendClient
+
+
+dataclient=APIBackendClient()
+
 
 
 dash.register_page(__name__,"/analysis")
@@ -102,94 +107,122 @@ layout = html.Div(
 @dash.callback(
     Output("analysis_card_content", "children"),
     Input("data_session_store", "data"),
+    # prevent_initial_call=True,
 )
-def update_analysis_content(df_json):
+def update_analysis_content(data_dict):
     """Update the content of the analysis card"""
 
-    if df_json is None:
+    if data_dict is None:
         return None
+
     else:
-        df = pd.read_json(df_json, orient='split')
+
+        headers = None
+        endpoint = "data_statistics"
+
+        data_statistics_dict = {
+            "blobcontainer": data_dict["blobcontainer"],
+            "subcontainer": data_dict["subcontainer"],
+            "file_name": data_dict["file_name"],
+            "account": data_dict["account"]
+        }
 
 
-        dft=df.describe().reset_index(drop = True).T
-        dft = dft.reset_index(drop=False)
-        dft.columns= ["description", "counts", "mean", "std", "min", "25%", "50%", "75%", "max"]
-        dft["nan"]=df.isna().sum().values
-
-        dft["usage"] = "no usage"
-        dft["transformation"] = "no transformation"
-        
-        dft["correlation"]=None
-
-        dft=dft.round(2)
-
-        # output_df=dft[["description", "usage", "transformation", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
-        output_df=dft[["description", "usage", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
 
 
-        usage_options = [
-            {"label": "no usage", "value": "no usage"},
-            {"label": "target", "value": "target"},
-            {"label": "feature", "value": "feature"},
+        if response.status_code == 200:
+            output = response.json()
+
+            output_df = pd.read_json(output, orient='split')
+
+            digits = 2
+            output_df = output_df.round(digits)
+
+            dft = output_df
+
+            dft["usage"] = "no usage"
+            dft["transformation"] = "no transformation"
+
+            dft["correlation"]=None
+
+            dft=dft.round(2)
+
+            # output_df=dft[["description", "usage", "transformation", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
+            output_df=dft[["description", "usage", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
+
+
+            usage_options = [
+                {"label": "no usage", "value": "no usage"},
+                {"label": "target", "value": "target"},
+                {"label": "feature", "value": "feature"},
+                ]
+
+            data_transformations = [
+                {"label": "no transformation", "value": "no transformation"},
+                {"label": "log", "value": "log"},
+                {"label": "sqrt", "value": "sqrt"},
+                {"label": "1/x", "value": "1/x"},
+                {"label": "x^2", "value": "x^2"},
+                {"label": "x^3", "value": "x^3"},
             ]
 
-        data_transformations = [
-            {"label": "no transformation", "value": "no transformation"},
-            {"label": "log", "value": "log"},
-            {"label": "sqrt", "value": "sqrt"},
-            {"label": "1/x", "value": "1/x"},
-            {"label": "x^2", "value": "x^2"},
-            {"label": "x^3", "value": "x^3"},
-        ]
 
+            dropdown_columns = ["usage", "transformation"]
 
-        dropdown_columns = ["usage", "transformation"]
+            colums_options = []
+            for i in output_df.columns:
+                if i not in dropdown_columns:
+                    colums_options.append({'name': i, 'id': i})
+                elif i == "usage":
+                    colums_options.append({'id': 'usage', 'name': 'usage', 'presentation': 'dropdown'})
+                elif i == "transformation":
+                    colums_options.append({'id': 'transformation', 'name': 'transformation', 'presentation': 'dropdown'})
 
-        colums_options = []
-        for i in output_df.columns:
-            if i not in dropdown_columns:
-                colums_options.append({'name': i, 'id': i})
-            elif i == "usage":
-                colums_options.append({'id': 'usage', 'name': 'usage', 'presentation': 'dropdown'})
-            elif i == "transformation":
-                colums_options.append({'id': 'transformation', 'name': 'transformation', 'presentation': 'dropdown'})
-
-        output = html.Div(
-            children=[
-                html.H1(),
-                dash_table.DataTable(
-                    # header of datatable fix when scrolling
-                    id="analysis_table",
-                    editable=True,
-                    data=output_df.to_dict('records'),
-                    columns=colums_options,
-                    dropdown={
-                        'usage':
-                            {"options": usage_options},
-                        'transformation':
-                            {"options": data_transformations},
-                    },
-                    fixed_rows={'headers': True},
-                    style_table={
-                        'overflowX': 'auto',
-                        "width": "1600px",
-                        "height": "300px",
+            output = html.Div(
+                children=[
+                    html.H1(),
+                    dash_table.DataTable(
+                        # header of datatable fix when scrolling
+                        id="analysis_table",
+                        editable=True,
+                        data=output_df.to_dict('records'),
+                        columns=colums_options,
+                        dropdown={
+                            'usage':
+                                {"options": usage_options},
+                            'transformation':
+                                {"options": data_transformations},
                         },
-                    style_cell={
-                        # all three widths are needed
-                        'minWidth': '70px', 'width': '70px', 'maxWidth': '250px',
-                        'overflow': 'hidden',
-                        'textOverflow': 'ellipsis',
+                        fixed_rows={'headers': True},
+                        style_table={
+                            'overflowX': 'auto',
+                            "width": "1600px",
+                            "height": "300px",
+                            },
+                        style_cell={
+                            # all three widths are needed
+                            'minWidth': '70px', 'width': '70px', 'maxWidth': '250px',
+                            'overflow': 'hidden',
+                            'textOverflow': 'ellipsis',
+                        }
+                    ),
+                ],
+                style={
+                    "justify-content": "center",
                     }
-                ),
-            ],
-            style={
-                "justify-content": "center",
-                }
-        )
+            )
 
-    return output
+            return output
+
+        else:
+            return None
+
+
 
 
 @dash.callback(
@@ -199,15 +232,35 @@ def update_analysis_content(df_json):
         ],
     Input("data_session_store", "data"),
 )
-def update_dd_columns(df_json):
+def update_dd_columns(data_dict):
     """Update the content of the analysis card"""
 
-    if df_json is None:
+    if data_dict is None:
         return None
-    else:
-        df = pd.read_json(df_json, orient='split')
 
-        columns = df.columns
+    else:
+
+        headers = None
+        endpoint = "data_columns"
+
+        data_statistics_dict = {
+            "blobcontainer": data_dict["blobcontainer"],
+            "subcontainer": data_dict["subcontainer"],
+            "file_name": data_dict["file_name"],
+            "account": data_dict["account"]
+        }
+
+
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
+
+        if response.status_code == 200:
+            output = response.json()
+
+        columns = output
 
         options = []
         for i in columns:

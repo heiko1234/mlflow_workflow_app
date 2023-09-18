@@ -104,7 +104,7 @@ layout = html.Div(
                     html.Div([
                         html.Div([
                             html.Div([
-                                dcc.Tabs(id='data_tabs', value='tab_data_upload',
+                                dcc.Tabs(id='data_tabs', value='tab_data_load',
                                     children=[
                                         dcc.Tab(label='File Usage', value='tab_data_upload'),
                                         dcc.Tab(label='Blobstorage Usage', value='tab_data_load'),
@@ -755,9 +755,6 @@ def update_descriptive(data_dict):
             endpoint=endpoint,
             json=data_statistics_dict
             )
-
-        print("trigger update_descriptive done")
-        print(f"update_descriptive: {response.status_code}")
 
         if response.status_code == 200:
             output = response.json()
