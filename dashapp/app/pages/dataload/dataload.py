@@ -319,134 +319,134 @@ def render_content(tab):
 
 
 
-@dash.callback(
-    [
-        Output('output_data_upload', 'children'),
-        Output("data_session_store", "data")
-    ],
-    [
-        Input('data_tabs', 'value'),
-        Input('upload_data', 'contents'),
-        Input('upload_data', 'filename'),
-        Input('upload_data', 'last_modified')
-    ]
-)
-def update_output(tab, content, list_of_names, list_of_dates):
+# @dash.callback(
+#     [
+#         Output('output_data_upload', 'children'),
+#         Output("data_session_store", "data")
+#     ],
+#     [
+#         Input('data_tabs', 'value'),
+#         Input('upload_data', 'contents'),
+#         Input('upload_data', 'filename'),
+#         Input('upload_data', 'last_modified')
+#     ]
+# )
+# def update_output(tab, content, list_of_names, list_of_dates):
 
-    button_triggered = ctx.triggered_id
+#     button_triggered = ctx.triggered_id
 
-    if button_triggered == 'data_tabs':
+#     if button_triggered == 'data_tabs':
 
-        output = None
-        df_json = None
+#         output = None
+#         df_json = None
 
-        return output, df_json
+#         return output, df_json
 
-    else:
+#     else:
 
-        if tab == 'tab_data_upload':
+#         if tab == 'tab_data_upload':
 
-            date = datetime.datetime.fromtimestamp(list_of_dates)
-            date = date.strftime("%m.%d.%Y %H:%M:%S")
-
-
-            content_type, content_string = content.split(',')
-            decoded = base64.b64decode(content_string)
+#             date = datetime.datetime.fromtimestamp(list_of_dates)
+#             date = date.strftime("%m.%d.%Y %H:%M:%S")
 
 
-            # if csv file upload file to data_session_store
-
-            if "csv" in list_of_names:
-                df = pd.read_csv(io.StringIO(decoded.decode('utf-8')), sep=";")
-
-            if "xls" in list_of_names:
-                df = pd.read_excel(io.BytesIO(decoded))
-
-            if "xlsx" in list_of_names:
-                df = pd.read_excel(io.BytesIO(decoded))
-
-            if "parquet" in list_of_names:
-                df = pd.read_parquet(io.BytesIO(decoded))
+#             content_type, content_string = content.split(',')
+#             decoded = base64.b64decode(content_string)
 
 
-            output =  html.Div(
-                children=[
-                    html.H3(list_of_names),
-                    html.H3(date),
-                    html.Hr(),  # horizontal line
-                    html.H1(),
-                    dash_table.DataTable(
-                        df.head().to_dict('records'),     #with or without head?
-                        [{'name': i, 'id': i} for i in df.columns],
-                        style_table={
-                            'overflowX': 'auto',
-                            "width": "900px",
-                            "height": "300px",
-                            },
-                        style_cell={
-                            # all three widths are needed
-                            'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
-                            'overflow': 'hidden',
-                            'textOverflow': 'ellipsis',
-                        }
-                    ),
-                ],
-                style={
-                    "justify-content": "center",
-                    }
-            )
+#             # if csv file upload file to data_session_store
 
-            df_json = df.to_json(date_format='iso', orient='split')
+#             if "csv" in list_of_names:
+#                 df = pd.read_csv(io.StringIO(decoded.decode('utf-8')), sep=";")
 
-            return output, df_json
+#             if "xls" in list_of_names:
+#                 df = pd.read_excel(io.BytesIO(decoded))
+
+#             if "xlsx" in list_of_names:
+#                 df = pd.read_excel(io.BytesIO(decoded))
+
+#             if "parquet" in list_of_names:
+#                 df = pd.read_parquet(io.BytesIO(decoded))
 
 
+#             output =  html.Div(
+#                 children=[
+#                     html.H3(list_of_names),
+#                     html.H3(date),
+#                     html.Hr(),  # horizontal line
+#                     html.H1(),
+#                     dash_table.DataTable(
+#                         df.head().to_dict('records'),     #with or without head?
+#                         [{'name': i, 'id': i} for i in df.columns],
+#                         style_table={
+#                             'overflowX': 'auto',
+#                             "width": "900px",
+#                             "height": "300px",
+#                             },
+#                         style_cell={
+#                             # all three widths are needed
+#                             'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
+#                             'overflow': 'hidden',
+#                             'textOverflow': 'ellipsis',
+#                         }
+#                     ),
+#                 ],
+#                 style={
+#                     "justify-content": "center",
+#                     }
+#             )
 
-@dash.callback(
-    Output('data_descriptive', 'children'),
-    [
-        Input('data_session_store', 'data')
-    ]
-)
-def update_descriptive(df_json):
-    # load data from data_session_store and make pandas describe for output
-    if df_json is None:
-        return None
-    else:
-        df = pd.read_json(df_json, orient='split')
+#             df_json = df.to_json(date_format='iso', orient='split')
 
-        dft=df.describe().reset_index(drop = True).T
-        dft = dft.reset_index(drop=False)
-        dft.columns= ["description", "counts", "mean", "std", "min", "25%", "50%", "75%", "max"]
-        dft["nan"]=df.isna().sum().values
+#             return output, df_json
 
-        output_df=dft.round(2)
 
-        output = html.Div(
-            children=[
-                html.H1(),
-                dash_table.DataTable(
-                    output_df.to_dict('records'),
-                    [{'name': i, 'id': i} for i in output_df.columns],
-                    style_table={
-                        'overflowX': 'auto',
-                        "width": "900px",
-                        "height": "400px",
-                        },
-                    style_cell={
-                        # all three widths are needed
-                        'minWidth': '70px', 'width': '70px', 'maxWidth': '2500px',
-                        'overflow': 'hidden',
-                        'textOverflow': 'ellipsis',
-                    }
-                ),
-            ],
-            style={
-                "justify-content": "center",
-                }
-        )
 
-    return output
+# @dash.callback(
+#     Output('data_descriptive', 'children'),
+#     [
+#         Input('data_session_store', 'data')
+#     ]
+# )
+# def update_descriptive(df_json):
+#     # load data from data_session_store and make pandas describe for output
+#     if df_json is None:
+#         return None
+#     else:
+#         df = pd.read_json(df_json, orient='split')
+
+#         dft=df.describe().reset_index(drop = True).T
+#         dft = dft.reset_index(drop=False)
+#         dft.columns= ["description", "counts", "mean", "std", "min", "25%", "50%", "75%", "max"]
+#         dft["nan"]=df.isna().sum().values
+
+#         output_df=dft.round(2)
+
+#         output = html.Div(
+#             children=[
+#                 html.H1(),
+#                 dash_table.DataTable(
+#                     output_df.to_dict('records'),
+#                     [{'name': i, 'id': i} for i in output_df.columns],
+#                     style_table={
+#                         'overflowX': 'auto',
+#                         "width": "900px",
+#                         "height": "400px",
+#                         },
+#                     style_cell={
+#                         # all three widths are needed
+#                         'minWidth': '70px', 'width': '70px', 'maxWidth': '2500px',
+#                         'overflow': 'hidden',
+#                         'textOverflow': 'ellipsis',
+#                     }
+#                 ),
+#             ],
+#             style={
+#                 "justify-content": "center",
+#                 }
+#         )
+
+#     return output
 
 
 
@@ -476,8 +476,7 @@ def download_example_data(n_clicks):
     [Input('blobstorage_environment', 'value')]
 )
 def populate_blobstorage_environment(value):
-    
-    
+
     headers = None
     endpoint = "list_available_accounts"
 
@@ -486,25 +485,27 @@ def populate_blobstorage_environment(value):
         headers=headers,
         endpoint=endpoint,
         )
-    
+
     if response.status_code == 200:
         output = response.json()
-        
+
         if isinstance(output, list):
             value = output
         else:
             value = [output]
-    
-    
+
     else:
         value = None
         output = None
 
-    if value is not None:
-        
-        output = [
-            {"label": i, "value": i} for i in value
-        ]
+    try:
+        if value is not None:
+
+            output = [
+                {"label": i, "value": i} for i in value
+            ]
+    except Exception:
+        output = None
 
     return output
 
@@ -515,17 +516,56 @@ def populate_blobstorage_environment(value):
     [
         Input('blobstorage_environment', 'value'),
         Input('container_name', 'value'),
-    
     ]
 )
 def populate_blobstorage_container(blobstorage_environment, container_name):
-    
-    
-    value = ["chemical-data", "model-container"]
 
-    output = [
-        {"label": i, "value": i} for i in value
-    ]
+    if blobstorage_environment is None:
+        value = []
+
+    else:
+
+        headers = None
+        endpoint = "list_available_blobs"
+
+
+        data_statistics_dict = {
+            "blobcontainer": None,
+            "subcontainer": None,
+            "file_name": None,
+            "account": blobstorage_environment
+        }
+
+
+
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
+
+        if response.status_code == 200:
+            output = response.json()
+
+            if isinstance(output, list):
+                value = output
+            else:
+                value = [output]
+
+        else:
+            value = None
+            output = None
+
+        # value = ["chemical-data", "model-container"]
+
+    try:
+        if value is not None:
+
+            output = [
+                {"label": i, "value": i} for i in value
+            ]
+    except Exception:
+        output = None
 
     return output
 
@@ -543,13 +583,54 @@ def populate_blobstorage_container(blobstorage_environment, container_name):
     ]
 )
 def populate_subblobstorage_container(blobstorage_environment, container_name, subcontainer_name):
-    
-    
-    value = ["chemical-data", "model-container"]
 
-    output = [
-        {"label": i, "value": i} for i in value
-    ]
+
+    if container_name is None:
+        value = []
+
+    else:
+        headers = None
+        endpoint = "list_available_subblobs"
+
+
+        data_statistics_dict = {
+            "blobcontainer": container_name,
+            "subcontainer": None,
+            "file_name": None,
+            "account": blobstorage_environment
+        }
+
+
+
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
+
+        if response.status_code == 200:
+            output = response.json()
+
+            if isinstance(output, list):
+                value = output
+            else:
+                value = [output]
+
+        else:
+            value = None
+            output = None
+
+
+    # value = ["chemical-data", "model-container"]
+
+    try:
+        if value is not None:
+
+            output = [
+                {"label": i, "value": i} for i in value
+            ]
+    except Exception:
+        output = None
 
     return output
 
@@ -567,22 +648,152 @@ def populate_subblobstorage_container(blobstorage_environment, container_name, s
     ]
 )
 def populate_file_name(blobstorage_environment, container_name, subcontainer_name, file_name):
-    
-    
-    value = ["ChemicalManufacturingProcess.parquet"]
 
-    output = [
-        {"label": i, "value": i} for i in value
-    ]
+
+    value = None
+    output = None
+
+    if subcontainer_name is None:
+        value = []
+
+    else:
+        headers = None
+        endpoint = "list_available_files"
+
+        data_statistics_dict = {
+            "blobcontainer": container_name,
+            "subcontainer": subcontainer_name,
+            "file_name": None,
+            "account": blobstorage_environment
+        }
+
+
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
+
+        if response.status_code == 200:
+            output = response.json()
+
+            if isinstance(output, list):
+                value = output
+            else:
+                value = [output]
+
+
+    # value = ["ChemicalManufacturingProcess.parquet"]
+
+    try:
+        if value is not None:
+
+            output = [
+                {"label": i, "value": i} for i in value
+            ]
+    except Exception as e:
+        print(f"populate_file_name: {e}")
+        output = None
 
     return output
 
 
 
 
+@dash.callback(
+    Output('data_session_store', 'data'),
+    [
+        Input('file_name', 'value'),
+        State('blobstorage_environment', 'value'),
+        State('container_name', 'value'),
+        State('subcontainer_name', 'value'),
+    ]
+)
+def populate_data_sessionstore(file_name, blobstorage_environment, container_name, subcontainer_name, ):
+
+
+    data_dict = {
+        "blobcontainer": container_name,
+        "subcontainer": subcontainer_name,
+        "file_name": file_name,
+        "account": blobstorage_environment
+    }
+    print(f"populate_data_sessionstore: {data_dict}")
+
+    # data_dict = [data_dict]
+
+    return data_dict
 
 
 
+@dash.callback(
+    Output('data_descriptive', 'children'),
+    [
+        Input('data_session_store', 'data')
+    ]
+)
+def update_descriptive(data_dict):
+
+    if data_dict is None:
+        return None
+
+    else:
+
+        headers = None
+        endpoint = "data_statistics"
+
+        data_statistics_dict = {
+            "blobcontainer": data_dict["blobcontainer"],
+            "subcontainer": data_dict["subcontainer"],
+            "file_name": data_dict["file_name"],
+            "account": data_dict["account"]
+        }
+
+
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
+
+        print("trigger update_descriptive done")
+        print(f"update_descriptive: {response.status_code}")
+
+        if response.status_code == 200:
+            output = response.json()
+
+            output_df = pd.read_json(output, orient='split')
+            print(f"update_descriptive data head: {output_df.head()}")
+
+            digits = 2
+            output_df = output_df.round(digits)
+
+
+            output = html.Div(
+                children=[
+                    html.H1(),
+                    dash_table.DataTable(
+                        output_df.to_dict('records'),
+                        [{'name': i, 'id': i} for i in output_df.columns],
+                        style_table={
+                            'overflowX': 'auto',
+                            "width": "900px",
+                            "height": "400px",
+                            },
+                        style_cell={
+                            # all three widths are needed
+                            'minWidth': '70px', 'width': '70px', 'maxWidth': '2500px',
+                            'overflow': 'hidden',
+                            'textOverflow': 'ellipsis',
+                        }
+                    ),
+                ],
+                style={
+                    "justify-content": "center",
+                    }
+            )
+
+    return output
 
 
 
