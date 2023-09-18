@@ -29,6 +29,11 @@ from app.utilities.spc import (
     filter_dataframe_by_limits
 )
 
+from app.utilities.api_call_clients import APIBackendClient
+
+
+dataclient=APIBackendClient()
+
 
 
 dash.register_page(__name__,"/preproces")
@@ -104,9 +109,9 @@ layout = html.Div(
     Input("project_target_feature_session_store", "data"),
 )
 def create_preprocessing_card_content(target_feature):
-    
+
     # print(f"create_preprocessing_card_content")
-    
+
     if target_feature is None or len(target_feature) == 0:
         print(f"create_preprocessing_card_content: target_feature is None")
         return html.Div(
@@ -145,10 +150,10 @@ def create_preprocessing_card_content(target_feature):
     State("data_session_store", "data"),
 )
 def create_preprocessing_card_content_output(
-    selected_feature, target_feature_dict, data
+    selected_feature, target_feature_dict, data_dict
 ):
     # print(f"create_preprocessing_card_content_output: selected_feature={selected_feature}")
-    
+
     if selected_feature is None:
         return html.Div(
             [
@@ -156,47 +161,78 @@ def create_preprocessing_card_content_output(
             ]
         )
     else:
-        
+
         # list_of_features_and_target
         dd_list = []
         dd_list.append(target_feature_dict["target"])
         dd_list.extend(target_feature_dict["features"])
-        
-        # read data from data_session_store
-        df = pd.read_json(data, orient="split")
 
-        df = df[dd_list]
-        df = pd.DataFrame(df[selected_feature])
+    if data_dict is None:
+        return None
 
+    else:
 
-        fig = control_chart_marginal(
-            data=df,
-            y_name=selected_feature,
-            xlabel= None,
-            title = "Controlchart",
-            lsl = None,
-            usl = None,
-            outliers = True,
-            annotations = True,
-            lines = True,
-            nelson=True,
-            mean = None,
-            sigma = None,
-            markersize = 6,
-            show=False)
+        headers = None
+        endpoint = "data_series"
+
+        data_statistics_dict = {
+            "blobcontainer": data_dict["blobcontainer"],
+            "subcontainer": data_dict["subcontainer"],
+            "file_name": data_dict["file_name"],
+            "account": data_dict["account"],
+            "column_name": selected_feature
+        }
 
 
-        output = dcc.Graph(
-            id="analysisplot",
-            figure=fig,
-            style={
-                "width": "1600px",
-                "height": "650px",
-                "justify-content": "center",
-                }
-        )
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
 
-        return output
+        if response.status_code == 200:
+            output = response.json()
+            data = output
+            # data = pd.read_json(output, orient='split')
+            data = [float(data[i]) for i in data.keys()]
+            data = pd.DataFrame(data=data, columns=[selected_feature])
+
+
+            fig = control_chart_marginal(
+                data=data,
+                y_name=selected_feature,
+                xlabel= None,
+                title = "Controlchart",
+                lsl = None,
+                usl = None,
+                outliers = True,
+                annotations = True,
+                lines = True,
+                nelson=True,
+                mean = None,
+                sigma = None,
+                markersize = 6,
+                show=False)
+
+
+            output = dcc.Graph(
+                id="analysisplot",
+                figure=fig,
+                style={
+                    "width": "1600px",
+                    "height": "650px",
+                    "justify-content": "center",
+                    }
+            )
+
+            return output
+
+        else:
+            return html.Div(
+                [
+                    html.H3("Problem with data loading.")
+                ]
+            )
 
 
 
@@ -209,10 +245,10 @@ def create_preprocessing_card_content_output(
     Input("project_target_feature_session_store", "data"),
     State("data_session_store", "data"),
 )
-def create_preprocessing_card_table_content(target_feature, data):
-    
+def create_preprocessing_card_table_content(target_feature, data_dict):
+
     # print(f"create_preprocessing_card_table_content")
-    
+
     if target_feature is None or len(target_feature) == 0:
         print(f"create_preprocessing_card_table_content: target_feature is None")
         return html.Div(
@@ -228,160 +264,190 @@ def create_preprocessing_card_table_content(target_feature, data):
         dd_list.append(dict_target_feature["target"])
         dd_list.extend(dict_target_feature["features"])
 
-        # read data from data_session_store
-        df = pd.read_json(data, orient="split")
 
-        df = df[dd_list]
+    if data_dict is None:
+        return None
 
+    else:
 
-        dft=df.describe().reset_index(drop = True).T
-        dft = dft.reset_index(drop=False)
-        dft.columns= ["description", "counts", "mean", "std", "min", "25%", "50%", "75%", "max"]
-        dft["nan"]=df.isna().sum().values
-        
-        dft = dft.drop(["25%", "50%", "75%"], axis=1)
-        
-        dft["rule1"] = "no cleaning"
-        dft["rule2"] = "no cleaning"
-        dft["rule3"] = "no cleaning"
-        dft["rule4"] = "no cleaning"
-        dft["rule5"] = "no cleaning"
-        dft["rule6"] = "no cleaning"
-        dft["rule7"] = "no cleaning"
-        dft["rule8"] = "no cleaning"
+        headers = None
+        endpoint = "data_statistics_selected_features"
+
+        data_statistics_dict = {
+            "blobcontainer": data_dict["blobcontainer"],
+            "subcontainer": data_dict["subcontainer"],
+            "file_name": data_dict["file_name"],
+            "account": data_dict["account"],
+            "features": dd_list
+        }
 
 
-        dft["transformation"] = "no transformation"
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
 
 
-        data_transformations = [
-            {"label": "no transformation", "value": "no transformation"},
-            {"label": "log", "value": "log"},
-            {"label": "sqrt", "value": "sqrt"},
-            {"label": "1/x", "value": "1/x"},
-            {"label": "x^2", "value": "x^2"},
-            {"label": "x^3", "value": "x^3"},
-        ]
-        
-        spc_rules = [
-            {"label": "no cleaning", "value": "no cleaning"},
-            {"label": "remove data", "value": "remove data"},
-        ]
-        
-        dft["usage"] = "feature"
-        
-        # for target, comming from dict_target_feature["target"], usage = "target" in dft table, column usage
-        # dft.loc[dft["usage"] == dict_target_feature["target"]] = "target"
-        # f.set_value('C', 'x', 10), 
-        index_target_in_table = dft[dft["description"] == dict_target_feature["target"]].index[0]
-        # dft.set_value(index_target_in_table, "usage", "target")
-        dft.loc[index_target_in_table, "usage"] = "target"
+        if response.status_code == 200:
+            output = response.json()
+
+            output_df = pd.read_json(output, orient='split')
+
+            digits = 2
+            output_df = output_df.round(digits)
+
+            dft = output_df
+
+            dft=dft.round(2)
+
+            # output_df=dft[["description", "usage", "transformation", "correlation", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
+            dft=dft[["description", "counts", "mean", "std", "min", "25%", "50%", "75%", "max", "nan"]]
 
 
+            dft = dft.drop(["25%", "50%", "75%"], axis=1)
 
-        dft = dft.loc[:, ["description", "usage", "transformation", "counts", "mean", "std", "min", "max", "nan", "rule1", "rule2", "rule3", "rule4", "rule5", "rule6", "rule7", "rule8"]]
+            dft["rule1"] = "no cleaning"
+            dft["rule2"] = "no cleaning"
+            dft["rule3"] = "no cleaning"
+            dft["rule4"] = "no cleaning"
+            dft["rule5"] = "no cleaning"
+            dft["rule6"] = "no cleaning"
+            dft["rule7"] = "no cleaning"
+            dft["rule8"] = "no cleaning"
 
 
-        # create dropdown columns
-        dropdown_columns = ["transformation", "rule1", "rule2", "rule3", "rule4", "rule5", "rule6", "rule7", "rule8"]
+            dft["transformation"] = "no transformation"
 
-        colums_options = []
-        for i in dft.columns:
-            if i not in dropdown_columns:
-                colums_options.append({'name': i, 'id': i})
-            elif i == "transformation":
-                colums_options.append({'id': 'transformation', 'name': 'transformation', 'presentation': 'dropdown'})
-            elif i == "rule1":
-                colums_options.append({'id': 'rule1', 'name': 'rule1', 'presentation': 'dropdown'})
-            elif i == "rule2":
-                colums_options.append({'id': 'rule2', 'name': 'rule2', 'presentation': 'dropdown'})
-            elif i == "rule3":
-                colums_options.append({'id': 'rule3', 'name': 'rule3', 'presentation': 'dropdown'})
-            elif i == "rule4":
-                colums_options.append({'id': 'rule4', 'name': 'rule4', 'presentation': 'dropdown'})
-            elif i == "rule5":
-                colums_options.append({'id': 'rule5', 'name': 'rule5', 'presentation': 'dropdown'})
-            elif i == "rule6":
-                colums_options.append({'id': 'rule6', 'name': 'rule6', 'presentation': 'dropdown'})
-            elif i == "rule7":
-                colums_options.append({'id': 'rule7', 'name': 'rule7', 'presentation': 'dropdown'})
-            elif i == "rule8":
-                colums_options.append({'id': 'rule8', 'name': 'rule8', 'presentation': 'dropdown'})
 
+            data_transformations = [
+                {"label": "no transformation", "value": "no transformation"},
+                {"label": "log", "value": "log"},
+                {"label": "sqrt", "value": "sqrt"},
+                {"label": "1/x", "value": "1/x"},
+                {"label": "x^2", "value": "x^2"},
+                {"label": "x^3", "value": "x^3"},
+            ]
+
+            spc_rules = [
+                {"label": "no cleaning", "value": "no cleaning"},
+                {"label": "remove data", "value": "remove data"},
+            ]
+
+            dft["usage"] = "feature"
+
+            # for target, comming from dict_target_feature["target"], usage = "target" in dft table, column usage
+            # dft.loc[dft["usage"] == dict_target_feature["target"]] = "target"
+            # f.set_value('C', 'x', 10),
+            index_target_in_table = dft[dft["description"] == dict_target_feature["target"]].index[0]
+            # dft.set_value(index_target_in_table, "usage", "target")
+            dft.loc[index_target_in_table, "usage"] = "target"
 
 
 
-        # round numbers in dft table
-        
-        dft["mean"] = dft["mean"].apply(lambda x: round(x, 2))
-        dft["std"] = dft["std"].apply(lambda x: round(x, 2))
-        dft["min"] = dft["min"].apply(lambda x: round(x, 2))
-        dft["max"] = dft["max"].apply(lambda x: round(x, 2))
+            dft = dft.loc[:, ["description", "usage", "transformation", "counts", "mean", "std", "min", "max", "nan", "rule1", "rule2", "rule3", "rule4", "rule5", "rule6", "rule7", "rule8"]]
 
 
-        table = dash_table.DataTable(
-            id="preprocessing_table",
-            columns=colums_options,
-            data=dft.to_dict('records'),
-            editable=True,
-            dropdown={
-                'transformation': {
-                    'options': data_transformations
+            # create dropdown columns
+            dropdown_columns = ["transformation", "rule1", "rule2", "rule3", "rule4", "rule5", "rule6", "rule7", "rule8"]
+
+            colums_options = []
+            for i in dft.columns:
+                if i not in dropdown_columns:
+                    colums_options.append({'name': i, 'id': i})
+                elif i == "transformation":
+                    colums_options.append({'id': 'transformation', 'name': 'transformation', 'presentation': 'dropdown'})
+                elif i == "rule1":
+                    colums_options.append({'id': 'rule1', 'name': 'rule1', 'presentation': 'dropdown'})
+                elif i == "rule2":
+                    colums_options.append({'id': 'rule2', 'name': 'rule2', 'presentation': 'dropdown'})
+                elif i == "rule3":
+                    colums_options.append({'id': 'rule3', 'name': 'rule3', 'presentation': 'dropdown'})
+                elif i == "rule4":
+                    colums_options.append({'id': 'rule4', 'name': 'rule4', 'presentation': 'dropdown'})
+                elif i == "rule5":
+                    colums_options.append({'id': 'rule5', 'name': 'rule5', 'presentation': 'dropdown'})
+                elif i == "rule6":
+                    colums_options.append({'id': 'rule6', 'name': 'rule6', 'presentation': 'dropdown'})
+                elif i == "rule7":
+                    colums_options.append({'id': 'rule7', 'name': 'rule7', 'presentation': 'dropdown'})
+                elif i == "rule8":
+                    colums_options.append({'id': 'rule8', 'name': 'rule8', 'presentation': 'dropdown'})
+
+
+
+
+            # round numbers in dft table
+
+            dft["mean"] = dft["mean"].apply(lambda x: round(x, 2))
+            dft["std"] = dft["std"].apply(lambda x: round(x, 2))
+            dft["min"] = dft["min"].apply(lambda x: round(x, 2))
+            dft["max"] = dft["max"].apply(lambda x: round(x, 2))
+
+
+            table = dash_table.DataTable(
+                id="preprocessing_table",
+                columns=colums_options,
+                data=dft.to_dict('records'),
+                editable=True,
+                dropdown={
+                    'transformation': {
+                        'options': data_transformations
+                    },
+                    'rule1': {
+                        'options': spc_rules
+                    },
+                    'rule2': {
+                        'options': spc_rules
+                    },
+                    'rule3': {
+                        'options': spc_rules
+                    },
+                    'rule4': {
+                        'options': spc_rules
+                    },
+                    'rule5': {
+                        'options': spc_rules
+                    },
+                    'rule6': {
+                        'options': spc_rules
+                    },
+                    'rule7': {
+                        'options': spc_rules
+                    },
+                    'rule8': {
+                        'options': spc_rules
+                    },
                 },
-                'rule1': {
-                    'options': spc_rules
+                style_cell={
+                    'textAlign': 'center',
+                    'minWidth': '75px', 'width': '75px', 'maxWidth': '250px',
+                    'overflow': 'hidden',
+                    'textOverflow': 'ellipsis',
                 },
-                'rule2': {
-                    'options': spc_rules
+                style_data={
+                    'whiteSpace': 'normal',
+                    'height': 'auto'
                 },
-                'rule3': {
-                    'options': spc_rules
+                style_table={
+                    'maxHeight': '500px',
+                    'overflowY': 'scroll'
                 },
-                'rule4': {
-                    'options': spc_rules
-                },
-                'rule5': {
-                    'options': spc_rules
-                },
-                'rule6': {
-                    'options': spc_rules
-                },
-                'rule7': {
-                    'options': spc_rules
-                },
-                'rule8': {
-                    'options': spc_rules
-                },
-            },
-            style_cell={
-                'textAlign': 'center',
-                'minWidth': '75px', 'width': '75px', 'maxWidth': '250px',
-                'overflow': 'hidden',
-                'textOverflow': 'ellipsis',
-            },
-            style_data={
-                'whiteSpace': 'normal',
-                'height': 'auto'
-            },
-            style_table={
-                'maxHeight': '500px',
-                'overflowY': 'scroll'
-            },
-        )
-        
-        output = html.Div(
-            children=[
-                html.H2(),
-                table
-            ],
-            style={
-                "width": "1800px",
-                "height": "350px",
-                "justify-content": "center",
-                }
-        )
-        
-        return output
+            )
+
+            output = html.Div(
+                children=[
+                    html.H2(),
+                    table
+                ],
+                style={
+                    "width": "1800px",
+                    "height": "350px",
+                    "justify-content": "center",
+                    }
+            )
+
+            return output
 
 
 
@@ -395,11 +461,10 @@ def save_spc_rules_in_session_store(data):
 
     df = pd.DataFrame(data)
     spc_cleaning_dict = transform_cleaning_table_in_dict(df)
-    
-    # print(f"save_spc_rules_in_session_store: spc_cleaning_dict: {spc_cleaning_dict}")
-    
+    print(f"save_spc_rules_in_session_store: spc_cleaning_dict: {spc_cleaning_dict}")
+
     return spc_cleaning_dict
-# ok, works
+
 
 
 
@@ -413,7 +478,7 @@ def save_limits_in_session_store(data):
 
     df = pd.DataFrame(data)
     limits_dict = create_limits_dict(df)
-    
+
     # print(f"save_limits_in_session_store: limits_dict: {limits_dict}")
 
     return limits_dict
@@ -427,7 +492,7 @@ def save_limits_in_session_store(data):
     Input("project_target_feature_session_store", "data"),
 )
 def create_plot_preprocessed_data(target_feature):
-    
+
     if target_feature is None or len(target_feature) == 0:
         print(f"create_preprocessing_card_content: target_feature is None")
         output = html.Div(
@@ -444,7 +509,7 @@ def create_plot_preprocessed_data(target_feature):
         dd_list = []
         dd_list.append(dict_target_feature["target"])
         dd_list.extend(dict_target_feature["features"])
-        
+
         dd_options = [{"label": i, "value": i} for i in dd_list]
 
 
@@ -464,7 +529,7 @@ def create_plot_preprocessed_data(target_feature):
                 )
             ]
         )
-    
+
         return output
 
 
@@ -479,9 +544,9 @@ def create_plot_preprocessed_data(target_feature):
     State("data_session_store", "data"),
 )
 def create_plot_preprocessed_data(dict_target_feature, selected_feature, spc_cleaning_dict, limits_dict, data):
-    
+
     # read data from data_table_session_store
-    
+
     if data is None or len(data) == 0:
         print(f"create_plot_preprocessed_data: data is None")
         return html.Div(
@@ -490,7 +555,7 @@ def create_plot_preprocessed_data(dict_target_feature, selected_feature, spc_cle
             ]
         )
     else:
-        # read data 
+        # read data
         # read data from data_session_store
         df = pd.read_json(data, orient="split")
 
@@ -500,20 +565,22 @@ def create_plot_preprocessed_data(dict_target_feature, selected_feature, spc_cle
 
         output_df = df[dd_list]
         
-        
+        # TODO: data load and data spc cleaning and limis filtering should be done in the backend
+
+
         # # filter data by spc and limits
-        
+
         if spc_cleaning_dict is not None:
             # print(f"create_plot_preprocessed_data: spc_cleaning_dict:")
             output_df = use_spc_cleaning_dict(output_df, spc_cleaning_dict)
         if limits_dict is not None:
             # print(f"create_plot_preprocessed_data: limits_dict:")
             output_df = filter_dataframe_by_limits(output_df, limits_dict)
-        
+
         output_df = output_df.reset_index(drop=True)
 
         df = pd.DataFrame(output_df[selected_feature])
-        
+
         lower_spec_limit = limits_dict[selected_feature]["min"]
         upper_spec_limit = limits_dict[selected_feature]["max"]
 
