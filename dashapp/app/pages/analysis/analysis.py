@@ -302,32 +302,57 @@ def update_dd_transformation(df_json):
     Input("dd_columns", "value"),
     Input("dd_transformation", "value"),
 )
-def update_analysisplot_card_content(df_json, column, transformation):
+def update_analysisplot_card_content(data_dict, column, transformation):
     """Update the content of the analysis card"""
 
-    if df_json is None:
+    if data_dict is None:
         return None
+
     else:
-        df = pd.read_json(df_json, orient='split')
+
+        headers = None
+        endpoint = "data_series"
+
+        data_statistics_dict = {
+            "blobcontainer": data_dict["blobcontainer"],
+            "subcontainer": data_dict["subcontainer"],
+            "file_name": data_dict["file_name"],
+            "account": data_dict["account"],
+            "column_name": column
+        }
+
+
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
+
+        if response.status_code == 200:
+            output = response.json()
+            data = output
+            # data = pd.read_json(output, orient='split')
+            data = [float(data[i]) for i in data.keys()]
+            data = pd.DataFrame(data=data, columns=[column])
+
 
         if column is None:
             return None
         else:
             if transformation == "no transformation":
-                data = df[column]
+                data = data[column]
             elif transformation == "log":
-                data = df[column].apply(lambda x: np.log(x))
+                data = data[column].apply(lambda x: np.log(x))
             elif transformation == "sqrt":
-                data = df[column].apply(lambda x: np.sqrt(x))
+                data = data[column].apply(lambda x: np.sqrt(x))
             elif transformation == "1/x":
-                data = df[column].apply(lambda x: 1/x)
+                data = data[column].apply(lambda x: 1/x)
             elif transformation == "x^2":
-                data = df[column].apply(lambda x: x**2)
+                data = data[column].apply(lambda x: x**2)
             elif transformation == "x^3":
-                data = df[column].apply(lambda x: x**3)
+                data = data[column].apply(lambda x: x**3)
 
         df = pd.DataFrame(data=data, columns=[column])
-
 
         fig = control_chart(
             data=df,
@@ -336,31 +361,14 @@ def update_analysisplot_card_content(df_json, column, transformation):
             title = "Controlchart",
             lsl = None,
             usl = None,
-            outliers = True,
+            outliers = False,
             annotations = True,
             lines = True,
-            nelson=True,
+            nelson=False,
             mean = None,
             sigma = None,
             markersize = 6,
             show=False)
-        
-        # fig = control_chart_marginal(
-        #     data=df,
-        #     y_name=column,
-        #     xlabel= None,
-        #     title = "Controlchart",
-        #     lsl = None,
-        #     usl = None,
-        #     outliers = True,
-        #     annotations = True,
-        #     lines = True,
-        #     nelson=True,
-        #     mean = None,
-        #     sigma = None,
-        #     markersize = 6,
-        #     show=False)
-
 
         output = dcc.Graph(
             id="analysisplot",
@@ -390,56 +398,47 @@ def update_analysisplot_card_content(df_json, column, transformation):
         State("data_session_store", "data"),
     ]
 )
-def update_target_analysis_table(data, df_json):
+def update_target_analysis_table(data, data_dict):
 
 
     dd = pd.DataFrame(data=data)
-    
-    # print(f"analysis_table1: {dd.head()}")
-    
-    try:
 
+
+    try:
         name_of_target = dd.loc[dd['usage'] == 'target']['description'].values[0]
 
-        # print(f"name_of_target: {name_of_target}")
-        
     except BaseException:
         name_of_target = None
 
-    # get data from data_session_store
-    if df_json is not None:
-        df = pd.read_json(df_json, orient='split')
-        # print(f"session store: {df}")
-        
-    # TODO: info for data transformation sahould be sed for correlation calculation
 
-
-    # calculate correlations for name_of_target and ignore if column may contains none values use numpy corrcoef
-    
-    if name_of_target is not None:
-    
-        correlations = []
-        for i in df.columns:
-            if i != name_of_target:
-                corr = np.corrcoef(df[name_of_target], df[i])[0, 1]
-                correlations.append(corr)
-            else:
-                correlations.append(1)
-
-        # print(f"correlations: {correlations}")
-        # print(f"len of correlations: {len(correlations)}")
-        # print(f"analysis_table before2: {dd.head()}")
-        # print(f"len of analysis_table before: {len(dd)}")
-
-        # round all values in list correlation to  4 digits
-        correlations = [round(i, 4) for i in correlations]
-
-        dd['correlation'] = correlations
-        
-    else:
+    if name_of_target is None:
         dd['correlation'] = None
 
-    # print(f"update_target_analysis_table analysis_table3: {dd.head()}")
+    else:
+        headers = None
+        endpoint = "data_target_correlation"
+
+        data_statistics_dict = {
+            "blobcontainer": data_dict["blobcontainer"],
+            "subcontainer": data_dict["subcontainer"],
+            "file_name": data_dict["file_name"],
+            "account": data_dict["account"],
+            "column_name": name_of_target
+        }
+
+
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
+
+        if response.status_code == 200:
+            output = response.json()
+            data = output
+
+        dd['correlation'] = data
+
 
     output = dd.to_dict('records')
 
@@ -451,34 +450,27 @@ def update_target_analysis_table(data, df_json):
 # callback to etract the target and the selected features from the analysis_table to sessionstore project_target_feature_session_store
 
 @dash.callback(
-    Output("project_target_feature_session_store", "data"),    
+    Output("project_target_feature_session_store", "data"),
     Input("analysis_table", "data"),
 )
 def update_project_target_feature_session_store(data):
-    
-    dd = pd.DataFrame(data=data)
-    
-    # print(f"analysis_table1: {dd.head()}")
-    
-    try:
 
+    dd = pd.DataFrame(data=data)
+
+    try:
         name_of_target = dd.loc[dd['usage'] == 'target']['description'].values[0]
 
-        # print(f"name_of_target: {name_of_target}")
-        
     except BaseException:
         name_of_target = None
 
     try:
         name_of_features = list(dd.loc[dd['usage'] == 'feature']['description'].values)
-        
+
     except BaseException:
         name_of_features = None
 
     output_dict = {"target": name_of_target, "features": name_of_features}
-    
-    # print(f"update_project_target_feature_session_store: {output_dict}")
-    
+
     return output_dict
 
 
