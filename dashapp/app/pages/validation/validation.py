@@ -29,10 +29,20 @@ from app.utilities.plots import (
 import mlflow
 from pathlib import PurePosixPath
 
+
+
+from app.utilities.api_call_clients import APIBackendClient
 from dotenv import load_dotenv
 
 
 load_dotenv()
+
+
+dataclient=APIBackendClient()
+
+
+
+
 
 
 
@@ -47,27 +57,27 @@ dash.register_page(__name__,"/validation")
 
 
 
-def get_mlflow_model(model_name, azure=True, staging="Staging"):
+# def get_mlflow_model(model_name, azure=True, staging="Staging"):
 
-    if azure:
-        azure_model_dir = os.getenv("MLFLOW_MODEL_DIRECTORY", "models:/")
-        if staging == "Staging":
-            model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Staging")
-            artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
-        elif staging == "Production":
-            model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Production")
-            artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
-        else:
-            print("Staging must be either 'Staging' or 'Production'. Default: Staging")
-            model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Staging")
-            artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
-        
-        artifact_path
+#     if azure:
+#         azure_model_dir = os.getenv("MLFLOW_MODEL_DIRECTORY", "models:/")
+#         if staging == "Staging":
+#             model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Staging")
+#             artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
+#         elif staging == "Production":
+#             model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Production")
+#             artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
+#         else:
+#             print("Staging must be either 'Staging' or 'Production'. Default: Staging")
+#             model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Staging")
+#             artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
 
-        model = mlflow.pyfunc.load_model(str(artifact_path))
-        print(f"Model {model_name} loaden from Azure: {artifact_path}")
-        
-    return model
+#         artifact_path
+
+#         model = mlflow.pyfunc.load_model(str(artifact_path))
+#         print(f"Model {model_name} loaden from Azure: {artifact_path}")
+
+#     return model
 
 
 
@@ -89,7 +99,7 @@ layout = html.Div(
                             id="model_download_dd",
                             style={"width": "80%"},
                         ),
-                        # add a toggle 
+                        # add a toggle
                         html.Br(),
                         html.H3("Select a plot mode"),
                         daq.ToggleSwitch(
@@ -128,90 +138,159 @@ layout = html.Div(
 
 
 
+# @dash.callback(
+#     Output("model_download_dd", "options"),
+#     Input("model_download_dd", "value"),
+# )
+# def get_model_download_options(value):
+
+#     try:
+
+#         import os
+#         from dotenv import load_dotenv
+
+
+#         load_dotenv()
+
+
+#         client = mlflow.MlflowClient()
+
+
+#         output = []
+
+
+#         for rm in client.search_registered_models():
+#             output.append({"label": rm.name, "value": rm.name})
+
+#         return output
+
+#     except Exception as e:
+#         print(e)
+#         return None
+
+
+
 @dash.callback(
-    Output("model_download_dd", "options"),
+    [
+        Output("model_download_dd", "options"),
+        # Output("model_download_dd", "value"),
+    ],
     Input("model_download_dd", "value"),
 )
-def get_model_download_options(value):
-    
+def get_model_download_value(value):
+
     try:
-    
-        import os
-        from dotenv import load_dotenv
+        headers = None
+        endpoint = "list_available_models"
 
 
-        load_dotenv()
+        response = dataclient.Backendclient.execute_get(
+            headers=headers,
+            endpoint=endpoint,
+            )
 
+        if response.status_code == 200:
+            output = response.json()
 
-        client = mlflow.MlflowClient()
-        
-        
-        output = []
+            if isinstance(output, list):
+                values = output
+            else:
+                values = [output]
 
-
-        for rm in client.search_registered_models():
-            output.append({"label": rm.name, "value": rm.name})
-            
-        return output
-    
-    except Exception as e:
-        print(e)
-        return None
-
-
-
-@dash.callback(
-    Output("output_validation", "children"),
-    Output("project_model_name_session_store", "data"),
-    Input("model_download_dd", "value"),
-    Input("plot_toggle", "value"),
-    State("data_session_store", "data"),
-)
-def make_validation_graphic(model_name, plot_mode, data):
-        
-    try:
-
-
-        mlflow_model = get_mlflow_model(model_name=model_name, azure=True, staging="Staging")
-        
-        
-        print(mlflow_model)
-
-        df = pd.read_json(data, orient="split")
-        
-        print(df)
-        
-        df_predict = df
-        
-        target = "Yield"
-        
-        df_predict[target] = df[target]
-        
-        target_string = target+"_validation"
-        
-        df_predict[target_string] = df_predict[target]-0.5
-        
-        # print(df_predict)
-        
-        # df_predict["Yield validation"] = mlflow_model.predict(df_predict)
-        
-        if plot_mode == False:
-        
-            fig = validation_plot(df_predict[target], df_predict[target_string])
-            
-            output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
-        
         else:
-            fig = x_y_plot(df_predict[target], df_predict[target_string])
-            
-            output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
-    
+            values = None
+            output = None
+            value = None
+
+
+        if values is not None:
+
+            output = [
+                {"label": i, "value": i} for i in values
+            ]
+            if value is None:
+                value = values[0]
+            else:
+                value = value
+
+        else:
+            output = None
+            value = None
+
+
+        return output # , value
+
+
     except Exception as e:
-        print(e)
+        print(f"get_model_download_value exception: {e}")
         output = None
-        
-    return output, model_name
-        
+        value = None
+
+        return output# , value
+
+
+
+# @dash.callback(
+#     Output("output_validation", "children"),
+#     Output("project_model_name_session_store", "data"),
+#     Input("model_download_dd", "value"),
+#     Input("plot_toggle", "value"),
+#     State("data_session_store", "data"),
+# )
+# def make_validation_graphic(model_name, plot_mode, data):
+
+#     try:
+
+
+#         mlflow_model = get_mlflow_model(model_name=model_name, azure=True, staging="Staging")
+
+
+#         print(mlflow_model)
+
+#         df = pd.read_json(data, orient="split")
+
+#         print(df)
+
+#         df_predict = df
+
+#         target = "Yield"
+
+#         df_predict[target] = df[target]
+
+#         target_string = target+"_validation"
+
+#         df_predict[target_string] = df_predict[target]-0.5
+
+#         # print(df_predict)
+
+#         # df_predict["Yield validation"] = mlflow_model.predict(df_predict)
+
+#         if plot_mode == False:
+
+#             fig = validation_plot(df_predict[target], df_predict[target_string])
+
+#             output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
+
+#         else:
+#             fig = x_y_plot(df_predict[target], df_predict[target_string])
+
+#             output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
+
+#     except Exception as e:
+#         print(e)
+#         output = None
+
+#     return output, model_name
+
+
+
+
+
+
+
+
+
+
 
 
 

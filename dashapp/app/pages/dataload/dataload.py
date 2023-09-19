@@ -472,7 +472,10 @@ def download_example_data(n_clicks):
 # callback to populate the dropdowns for the blobstorage environment
 
 @dash.callback(
-    Output('blobstorage_environment', 'options'),
+    [
+        Output('blobstorage_environment', 'options'),
+        Output('blobstorage_environment', 'value'),
+    ],
     [Input('blobstorage_environment', 'value')]
 )
 def populate_blobstorage_environment(value):
@@ -490,29 +493,38 @@ def populate_blobstorage_environment(value):
         output = response.json()
 
         if isinstance(output, list):
-            value = output
+            values = output
         else:
-            value = [output]
+            values = [output]
 
     else:
+        values = None
+        output = None
+
+
+    if values is not None:
+
+        output = [
+            {"label": i, "value": i} for i in values
+        ]
+        if value is None:
+            value = values[0]
+        else:
+            value = value
+
+    else:
+        output = None
         value = None
-        output = None
 
-    try:
-        if value is not None:
-
-            output = [
-                {"label": i, "value": i} for i in value
-            ]
-    except Exception:
-        output = None
-
-    return output
+    return output, value
 
 
 
 @dash.callback(
-    Output('container_name', 'options'),
+    [
+        Output('container_name', 'options'),
+        Output('container_name', 'value'),
+    ],
     [
         Input('blobstorage_environment', 'value'),
         Input('container_name', 'value'),
@@ -548,26 +560,32 @@ def populate_blobstorage_container(blobstorage_environment, container_name):
             output = response.json()
 
             if isinstance(output, list):
-                value = output
+                values = output
             else:
-                value = [output]
+                values = [output]
 
         else:
-            value = None
+            values = None
             output = None
+            value = None
 
         # value = ["chemical-data", "model-container"]
 
-    try:
-        if value is not None:
+    if values is not None:
 
-            output = [
-                {"label": i, "value": i} for i in value
-            ]
-    except Exception:
+        output = [
+            {"label": i, "value": i} for i in values
+        ]
+        if container_name is None:
+            value = values[0]
+        else:
+            value = container_name
+
+    else:
         output = None
+        value = None
 
-    return output
+    return output, value
 
 
 
@@ -575,7 +593,10 @@ def populate_blobstorage_container(blobstorage_environment, container_name):
 
 
 @dash.callback(
-    Output('subcontainer_name', 'options'),
+    [
+        Output('subcontainer_name', 'options'),
+        Output('subcontainer_name', 'value'),
+    ],
     [
         Input('blobstorage_environment', 'value'),
         Input('container_name', 'value'),
@@ -612,34 +633,42 @@ def populate_subblobstorage_container(blobstorage_environment, container_name, s
             output = response.json()
 
             if isinstance(output, list):
-                value = output
+                values = output
             else:
-                value = [output]
+                values = [output]
 
         else:
-            value = None
+            values = None
             output = None
 
 
     # value = ["chemical-data", "model-container"]
 
-    try:
-        if value is not None:
+    if values is not None:
 
-            output = [
-                {"label": i, "value": i} for i in value
-            ]
-    except Exception:
+        output = [
+            {"label": i, "value": i} for i in values
+        ]
+        if subcontainer_name is None:
+            value = values[0]
+        else:
+            value = subcontainer_name
+
+    else:
         output = None
+        value = None
 
-    return output
+    return output, value
 
 
 
 
 
 @dash.callback(
-    Output('file_name', 'options'),
+    [
+        Output('file_name', 'options'),
+        Output('file_name', 'value'),
+    ],
     [
         Input('blobstorage_environment', 'value'),
         Input('container_name', 'value'),
@@ -678,24 +707,28 @@ def populate_file_name(blobstorage_environment, container_name, subcontainer_nam
             output = response.json()
 
             if isinstance(output, list):
-                value = output
+                values = output
             else:
-                value = [output]
+                values = [output]
 
 
     # value = ["ChemicalManufacturingProcess.parquet"]
 
-    try:
-        if value is not None:
+    if values is not None:
 
-            output = [
-                {"label": i, "value": i} for i in value
-            ]
-    except Exception as e:
-        print(f"populate_file_name: {e}")
+        output = [
+            {"label": i, "value": i} for i in values
+        ]
+        if file_name is None:
+            value = values[0]
+        else:
+            value = file_name
+
+    else:
         output = None
+        value = None
 
-    return output
+    return output, value
 
 
 
@@ -760,7 +793,7 @@ def update_descriptive(data_dict):
             output = response.json()
 
             output_df = pd.read_json(output, orient='split')
-            print(f"update_descriptive data head: {output_df.head()}")
+            # print(f"update_descriptive data head: {output_df.head()}")
 
             digits = 2
             output_df = output_df.round(digits)

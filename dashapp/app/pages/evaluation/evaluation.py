@@ -229,15 +229,15 @@ def make_evaluation_graphic(data, model_name):
 
             target = "Yield"
             target_string = target+"_evaluation"
-            
+
             # df[target_string] = mlflow_model.predict(df)
-            
+
             df[target_string] = df[target]-0.7
-            
+
             fig = validation_plot(df[target], df[target_string])
-            
+
             output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
-            
+
             return output
 
 
