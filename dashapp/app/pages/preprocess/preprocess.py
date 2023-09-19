@@ -27,7 +27,10 @@ from app.utilities.spc import (
     use_spc_cleaning_dict,
     create_limits_dict,
     update_nested_dict,
-    filter_dataframe_by_limits
+    filter_dataframe_by_limits,
+)
+from app.utilities.data_transformation import (
+    transform_datapoint
 )
 
 from app.utilities.api_call_clients import APIBackendClient
@@ -459,7 +462,7 @@ def create_preprocessing_card_table_content(target_feature, data_dict):
     Input("preprocessing_table", "data"),
 )
 def save_spc_rules_in_session_store(data):
-    print(f"save_spc_rules_in_session_store triggered")
+    # print(f"save_spc_rules_in_session_store triggered")
 
     df = pd.DataFrame(data)
     spc_cleaning_dict = transform_cleaning_table_in_dict(df)
@@ -477,7 +480,7 @@ def save_spc_rules_in_session_store(data):
     Input("preprocessing_table", "data"),
 )
 def save_limits_in_session_store(data):
-    print(f"save_limits_in_session_store triggered")
+    # print(f"save_limits_in_session_store triggered")
 
     df = pd.DataFrame(data)
     limits_dict = create_limits_dict(df)
@@ -495,7 +498,7 @@ def save_limits_in_session_store(data):
     Input("preprocessing_table", "data"),
 )
 def save_data_transforming_in_session_store(data):
-    print(f"save_data_transforming_in_session_store triggered")
+    # print(f"save_data_transforming_in_session_store triggered")
 
     df = pd.DataFrame(data)
     # print(f"save_data_transforming_in_session_store triggered: {df}")
@@ -569,16 +572,12 @@ def create_plot_preprocessed_data(target_feature):
 )
 def create_plot_preprocessed_data(dict_target_feature, selected_feature, spc_cleaning_dict, limits_dict, transformation_dict, data_dict):
 
-    print(f"create_plot_preprocessed_data triggered")
+    # print(f"create_plot_preprocessed_data triggered")
 
-    if dict_target_feature is None or len(dict_target_feature) == 0:
+    if dict_target_feature is not None:
         dd_list = []
         dd_list.append(dict_target_feature["target"])
         dd_list.extend(dict_target_feature["features"])
-
-        output_df = df[dd_list]
-
-        # TODO: data load and data spc cleaning and limis filtering should be done in the backend
 
     if data_dict is None:
         return None
@@ -606,21 +605,34 @@ def create_plot_preprocessed_data(dict_target_feature, selected_feature, spc_cle
             json=data_statistics_dict
             )
 
+        # print(f"create_plot_preprocessed_data: response.status_code: {response.status_code}")
+
 
         if response.status_code == 200:
             output = response.json()
 
+
+
             output_df = pd.read_json(output, orient='split')
 
-            # print(output_df)
 
 
             output_df = output_df.reset_index(drop=True)
 
             df = pd.DataFrame(output_df[selected_feature])
 
+
+            # scale the limits for printing in the plot
             lower_spec_limit = limits_dict[selected_feature]["min"]
             upper_spec_limit = limits_dict[selected_feature]["max"]
+
+            transformation = transformation_dict[selected_feature]
+            lower_spec_limit = transform_datapoint(lower_spec_limit, transformation)
+            upper_spec_limit = transform_datapoint(upper_spec_limit, transformation)
+
+            if transformation == "1/x":
+                lower_spec_limit, upper_spec_limit = upper_spec_limit, lower_spec_limit
+
 
             fig = control_chart(
                 data=output_df,
