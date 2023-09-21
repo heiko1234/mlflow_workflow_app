@@ -171,13 +171,12 @@ layout = html.Div(
 
 
 @dash.callback(
-    [
-        Output("model_download_dd", "options"),
-        # Output("model_download_dd", "value"),
-    ],
+    Output("model_download_dd", "options"),
     Input("model_download_dd", "value"),
 )
-def get_model_download_value(value):
+def get_model_download_value(model_selected):
+
+    # print(f"get_model_download_value model_selected: {model_selected}")
 
     try:
         headers = None
@@ -192,95 +191,113 @@ def get_model_download_value(value):
         if response.status_code == 200:
             output = response.json()
 
+
+            output = ["project_name"]
+
+
             if isinstance(output, list):
-                values = output
+                listed_models = output
             else:
-                values = [output]
+                listed_models = [output]
 
         else:
-            values = None
-            output = None
+            listed_models = None
+            options = None
             value = None
 
-
-        if values is not None:
-
-            output = [
-                {"label": i, "value": i} for i in values
-            ]
-            if value is None:
-                value = values[0]
-            else:
-                value = value
-
-        else:
-            output = None
-            value = None
+            return value
 
 
-        return output # , value
+        listed_models = list(set(listed_models))
+
+
+        options = [
+            {"label": i, "value": i} for i in listed_models
+        ]
+
+        return options
 
 
     except Exception as e:
         print(f"get_model_download_value exception: {e}")
-        output = None
+        options = None
         value = None
 
-        return output# , value
+        return options
 
 
 
-# @dash.callback(
-#     Output("output_validation", "children"),
-#     Output("project_model_name_session_store", "data"),
-#     Input("model_download_dd", "value"),
-#     Input("plot_toggle", "value"),
-#     State("data_session_store", "data"),
-# )
-# def make_validation_graphic(model_name, plot_mode, data):
+@dash.callback(
+    [
+        Output("output_validation", "children"),
+        Output("project_model_name_session_store", "data"),
+    ],
+    Input("model_download_dd", "value"),
+    Input("plot_toggle", "value"),
+    State("data_session_store", "data"),
+)
+def make_validation_graphic(model_name, plot_mode, data_dict):
 
-#     try:
+    try:
+
+        if data_dict is None:
+            return None, model_name
+
+        else:
+            headers = None
+            endpoint = "model_validation"
+
+            data_statistics_dict = {
+                "blobcontainer": data_dict["blobcontainer"],
+                "subcontainer": data_dict["subcontainer"],
+                "file_name": data_dict["file_name"],
+                "account": data_dict["account"],
+                "use_model_name": model_name
+            }
+
+            # print(f"data_statistics_dict: {data_statistics_dict}")
+
+            response = dataclient.Backendclient.execute_post(
+                headers=headers,
+                endpoint=endpoint,
+                json=data_statistics_dict
+                )
 
 
-#         mlflow_model = get_mlflow_model(model_name=model_name, azure=True, staging="Staging")
+            if response.status_code == 200:
+                output = response.json()
+
+                output_df = pd.read_json(output, orient="split")
+
+                if plot_mode == False:
+                    fig = validation_plot(output_df["actual"], output_df["prediction"])
+
+                    output = dcc.Graph(
+                        figure=fig,
+                        style={
+                            "width": "1700px",
+                            "height": "700px"
+                            }
+                    )
+
+                else:
+                    fig = x_y_plot(output_df["actual"], output_df["prediction"])
+
+                    output = dcc.Graph(
+                        figure=fig,
+                        style={
+                            "width": "1700px",
+                            "height": "700px"
+                            }
+                    )
+    except Exception as e:
+        print(e)
+        output = None
+
+    return output, model_name
 
 
-#         print(mlflow_model)
 
-#         df = pd.read_json(data, orient="split")
-
-#         print(df)
-
-#         df_predict = df
-
-#         target = "Yield"
-
-#         df_predict[target] = df[target]
-
-#         target_string = target+"_validation"
-
-#         df_predict[target_string] = df_predict[target]-0.5
-
-#         # print(df_predict)
-
-#         # df_predict["Yield validation"] = mlflow_model.predict(df_predict)
-
-#         if plot_mode == False:
-
-#             fig = validation_plot(df_predict[target], df_predict[target_string])
-
-#             output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
-
-#         else:
-#             fig = x_y_plot(df_predict[target], df_predict[target_string])
-
-#             output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
-
-#     except Exception as e:
-#         print(e)
-#         output = None
-
-#     return output, model_name
 
 
 

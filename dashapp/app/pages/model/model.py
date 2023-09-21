@@ -393,21 +393,24 @@ def update_model_parameters_loading(n_clicks, dict_target_feature, spc_cleaning_
 
 
         data_statistics_dict = {
+            # Load files from blob storage
             "blobcontainer": data_dict["blobcontainer"],
             "subcontainer": data_dict["subcontainer"],
             "file_name": data_dict["file_name"],
             "account": data_dict["account"],
+            # data precleaning for modelling
             "features": dd_list,
             "spc_cleaning_dict": spc_cleaning_dict,
             "limits_dict": limits_dict,
             "transformation_dict": transformation_dict,
+            # modelling
             "target": dict_target_feature["target"],
-            "model_features": dict_target_feature["features"],
+            "use_model_features": dict_target_feature["features"],
             "test_size": data_splitter_value,
             "scaler_expand_by": scaler_expand_by,
-            "model_name": "project_name",   # any_project_name
-            "model_parameter": model_parameters,
-            "model_typ": model_selection_value
+            "use_model_name": "project_name",   # TODO: any_project_name
+            "use_model_parameter": model_parameters,
+            "use_model_typ": model_selection_value
         }
 
 
@@ -421,6 +424,7 @@ def update_model_parameters_loading(n_clicks, dict_target_feature, spc_cleaning_
         output = response.json()
 
 
+    if output == "Done":
         output = [
             html.Div([
                 html.P("Model trained successfully"),
