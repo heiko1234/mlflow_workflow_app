@@ -1,6 +1,7 @@
 
 
 import os
+import io
 import pandas as pd
 import numpy as np
 
@@ -87,32 +88,51 @@ layout = html.Div(
     children=[
         html.H1(children='This is our validation page'),
         html.Div(children=[
-            standard_card(
-                id="validation_card",
-                header_text="Select a Model",
-                width="600px",
-                height="300px",
-                content=
-                [
-                    html.Div([
-                        dcc.Dropdown(
-                            id="model_download_dd",
-                            style={"width": "80%"},
-                        ),
-                        # add a toggle
-                        html.Br(),
-                        html.H3("Select a plot mode"),
-                        daq.ToggleSwitch(
-                            id="plot_toggle",
-                            label=["Overlay", "X-y plot"],
-                            color="blue",
-                            value=False,
-                            style={"width": "80%", "margin-top": "20px"}
-                        ),
-                    ],
-                    style={"display": "block"}
-                    )
-                ]
+            html.Div([
+                standard_card(
+                    id="validation_card",
+                    header_text="Select a Model",
+                    width="600px",
+                    height="300px",
+                    content=
+                    [
+                        html.Div([
+                            dcc.Dropdown(
+                                id="model_download_dd",
+                                style={"width": "80%"},
+                            ),
+                            # add a toggle
+                            html.Br(),
+                            html.H3("Select a plot mode"),
+                            daq.ToggleSwitch(
+                                id="plot_toggle",
+                                label=["Overlay", "X-y plot"],
+                                color="blue",
+                                value=False,
+                                style={"width": "80%", "margin-top": "20px"}
+                            ),
+                        ],
+                        style={"display": "block"}
+                        )
+                    ]
+                )
+                ,
+                standard_card(
+                    id="validation_card_info",
+                    header_text="Model info",
+                    width="300px",
+                    height="300px",
+                    content=[
+                        html.Div([
+                            html.H3("Modelversion: "),
+                            html.H4(id="model_version_id", style={"color": "blue", "margin-left": "10px"})
+                            ],
+                            style = {"width": "80%", "margin-top": "20px", "display": "flex", "margin": "10px", "padding": "10px"}
+                        )
+                    ]
+                )
+            ],
+            style = {"display": "flex"}
             )
         ]
         ),
@@ -227,6 +247,42 @@ def get_model_download_value(model_selected):
 
 
 
+
+@dash.callback(
+    Output("model_version_id", "children"),
+    Input("model_download_dd", "value"),
+)
+def get_model_version(model_selected):
+
+    try:
+        headers = None
+        endpoint = "list_available_models"
+
+
+        response = dataclient.Backendclient.execute_get(
+            headers=headers,
+            endpoint=endpoint,
+            )
+
+        if response.status_code == 200:
+            output = response.json()
+
+
+        # TODO: replace fix model version by api callback
+
+        output  = "5"
+
+        return output
+
+
+    except Exception as e:
+        print(f"get_model_version exception: {e}")
+        output = None
+
+
+        return output
+
+
 @dash.callback(
     [
         Output("output_validation", "children"),
@@ -266,6 +322,10 @@ def make_validation_graphic(model_name, plot_mode, data_dict):
 
             if response.status_code == 200:
                 output = response.json()
+
+                # # vielleicht so: 
+                # load_IO = io.StringIO()
+                # output = load_IO(output)
 
                 output_df = pd.read_json(output, orient="split")
 
