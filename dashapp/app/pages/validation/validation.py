@@ -212,7 +212,8 @@ def get_model_download_value(model_selected):
             output = response.json()
 
 
-            output = ["project_name"]
+            # TODO: remove fix model name
+            # output = ["project_name"]
 
 
             if isinstance(output, list):
@@ -251,26 +252,36 @@ def get_model_download_value(model_selected):
 @dash.callback(
     Output("model_version_id", "children"),
     Input("model_download_dd", "value"),
+    State("data_session_store", "data")
 )
-def get_model_version(model_selected):
+def get_model_version(model_selected, data_dict):
 
     try:
         headers = None
-        endpoint = "list_available_models"
+        endpoint = "get_model_version"
+
+        data_statistics_dict = {
+                "account": data_dict["account"],
+                "use_model_name": model_selected,
+                "staging": "Staging"
+            }
 
 
-        response = dataclient.Backendclient.execute_get(
+        response = dataclient.Backendclient.execute_post(
             headers=headers,
             endpoint=endpoint,
+            json=data_statistics_dict
             )
 
         if response.status_code == 200:
             output = response.json()
 
+        print(output)
 
-        # TODO: replace fix model version by api callback
 
-        output  = "5"
+        # # TODO: replace fix model version by api callback
+
+        # output  = "5"
 
         return output
 
