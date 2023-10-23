@@ -142,7 +142,6 @@ model_parameters_card = html.Div([
         height="600px",
         content=[
             html.Div([
-                html.H3("Model Parameters"),
                 dcc.Loading(
                     id="model_parameters_loading",
                 ),
@@ -157,6 +156,28 @@ model_parameters_card = html.Div([
     )
 ])
 
+
+model_training_feedback_card = html.Div([
+    standard_card(
+        id="model_training_feedback_card",
+        header_text="Model Training Feedback",
+        width="800px",
+        height="200px",
+        content=[
+            html.Div([
+                dcc.Loading(
+                    id="model_training_feedback_loading",
+                ),
+                html.H3(""),
+            ],
+            style={
+                    "overflow": "auto",
+                    "height": "100px"
+                }
+            )
+        ]
+    )
+])
 
 
 
@@ -184,6 +205,15 @@ layout = html.Div(
                 },
             ),
         ]),
+        html.Div([
+            model_training_feedback_card,
+        ],
+        style={
+            "display": "flex",
+            "align-items": "center",
+            "justify-content": "center"
+            }
+        ),
         Model_submit
         # html.Div([
         #     submit_card
@@ -204,10 +234,10 @@ layout = html.Div(
 )
 def update_model_selection(model_selection):
     output = [
-        {"label": "DecisionTreeRegressor", "value": "DecisionTreeRegressor"},
-        {"label": "RandomForestRegressor", "value": "RandomForestRegressor"},
-        {"label": "Ridge", "value": "Ridge"},
         {"label": "LinearRegression", "value": "LinearRegression"},
+        {"label": "Ridge", "value": "Ridge"},
+        {"label": "RandomForestRegressor", "value": "RandomForestRegressor"},
+        {"label": "DecisionTreeRegressor", "value": "DecisionTreeRegressor"},
         {"label": "AdaBoostRegressor", "value": "AdaBoostRegressor"},
         {"label": "NeuralNetwork", "value": "NeuralNetwork"},
     ]
@@ -287,29 +317,144 @@ def update_data_splitter(data_splitter):
 
 
 
-# @dash.callback(
-#     [
-#         Output("model_parameters_loading", "children"),
-#     ],
-#     [
-#         Input("model_selection", "value"),
-#     ]
-# )
-# def update_model_parameters_loading(model_selection):
-#     output = [
-#         html.Div([
-#             html.P("Select a model to see its parameters"),
-#         ])
-#     ]
+@dash.callback(
+    [
+        Output("model_parameters_loading", "children"),
+    ],
+    [
+        Input("model_selection", "value"),
+    ]
+)
+def update_model_parameters_loading(model_selection):
 
-#     return output
+        # {"label": "LinearRegression", "value": "LinearRegression"},
+        # {"label": "Ridge", "value": "Ridge"},
+        # {"label": "RandomForestRegressor", "value": "RandomForestRegressor"},
+        # {"label": "DecisionTreeRegressor", "value": "DecisionTreeRegressor"},
+        # {"label": "AdaBoostRegressor", "value": "AdaBoostRegressor"},
+        # {"label": "NeuralNetwork", "value": "NeuralNetwork"},
+
+    if model_selection == "LinearRegression":
+        output = [
+            html.Div([
+                html.P("No parameters to adjust, take it as it is"),
+            ])
+        ]
+    elif model_selection == "Ridge":
+        output = [
+            html.Div([
+                html.Div([
+                    html.H3("Alpha"),
+                    dcc.Input(
+                        id="model_parameters_alpha",
+                        type="number",
+                        value=1,
+                        min=0,
+                        max=1,
+                        step=0.01,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    ),
+                ],
+                style={"display": "flex", "margin": "1em", "justify-content": "left"}),
+            ])
+        ]
+    elif model_selection == "RandomForestRegressor":
+        output = [
+            html.Div([
+                html.Div([
+                    html.H3("n_estimators"),
+                    dcc.Input(
+                        id="model_parameters_n_estimators",
+                        type="number",
+                        value=100,
+                        min=0,
+                        max=1000,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    ),
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("max_depth"),
+                    dcc.Input(
+                        id="model_parameters_max_depth",
+                        type="number",
+                        value=10,
+                        min=0,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    ),
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("min_samples_split"),
+                    dcc.Input(
+                        id="model_parameters_min_samples_split",
+                        type="number",
+                        value=2,
+                        min=0,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    ),
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("min_samples_leaf"),
+                    dcc.Input(
+                        id="model_parameters_min_samples_leaf",
+                        type="number",
+                        value=1,
+                        min=0,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    ),
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("max_features"),
+                    dcc.Input(
+                        id="model_parameters_max_features",
+                        type="number",
+                        value=1,
+                        min=0,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    ),
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+            ])
+        ]
+    else:
+        output = [
+            html.Div([
+                html.P("No parameters to adjust"),
+            ])
+        ]
+
+
+    return output
 
 
 
 
 @dash.callback(
     [
-        Output("model_parameters_loading", "children"),
+        Output("model_training_feedback_loading", "children"),
     ],
     [
         Input("submit-model", "n_clicks"),
@@ -323,12 +468,7 @@ def update_data_splitter(data_splitter):
         State("model_selection", "value"),
     ]
 )
-def update_model_parameters_loading(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, transformation_dict, data_dict, data_splitter, data_scaler, model_selection):
-    # output = [
-    #     html.Div([
-    #         html.P("Select a model to see its parameters"),
-    #     ])
-    # ]
+def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, transformation_dict, data_dict, data_splitter, data_scaler, model_selection):
 
     headers = None
     endpoint = "train_model"
@@ -408,7 +548,7 @@ def update_model_parameters_loading(n_clicks, dict_target_feature, spc_cleaning_
             "use_model_features": dict_target_feature["features"],
             "test_size": data_splitter_value,
             "scaler_expand_by": scaler_expand_by,
-            "use_model_name": "project_name",   # TODO: any_project_name
+            "use_model_name": "project_name",   # TODO: any_project_name: AreaKey of Kusto + ModelName
             "use_model_parameter": model_parameters,
             "use_model_typ": model_selection_value
         }

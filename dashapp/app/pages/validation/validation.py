@@ -130,7 +130,27 @@ layout = html.Div(
                             style = {"width": "80%", "margin-top": "20px", "display": "flex", "margin": "10px", "padding": "10px"}
                         )
                     ]
-                )
+                ),
+                standard_card(
+                    id="validation_card_model_to_production",
+                    header_text="Do you like to use the model in Production?",
+                    width="300px",
+                    height="300px",
+                    content=[
+                        html.Div([
+                            html.Button("Send to Production",
+                                        className="submit_button",
+                                        id="send_to_production_button",
+                                        n_clicks=0,
+                                ),
+                            ],
+                            style={"display": "flex",
+                                "justify-content": "center",
+                                "margin": "20px"
+                                }
+                            )
+                    ]
+                ),
             ],
             style = {"display": "flex"}
             )
@@ -276,13 +296,6 @@ def get_model_version(model_selected, data_dict):
         if response.status_code == 200:
             output = response.json()
 
-        print(output)
-
-
-        # # TODO: replace fix model version by api callback
-
-        # output  = "5"
-
         return output
 
 
@@ -313,6 +326,7 @@ def make_validation_graphic(model_name, plot_mode, data_dict):
         else:
             headers = None
             endpoint = "model_validation"
+            # endpoint = "model_validation_graphics"
 
             data_statistics_dict = {
                 "blobcontainer": data_dict["blobcontainer"],
@@ -361,6 +375,20 @@ def make_validation_graphic(model_name, plot_mode, data_dict):
                             "height": "700px"
                             }
                     )
+
+                # fig = output["fig"]
+
+                # if plot_mode == False:
+
+                #     output = dcc.Graph(
+                #         figure = fig,
+                #         style={
+                #             "width": "1700px",
+                #             "height": "700px"
+                #             }
+                #         )
+
+
     except Exception as e:
         print(e)
         output = None

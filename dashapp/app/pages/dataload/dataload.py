@@ -319,135 +319,24 @@ def render_content(tab):
 
 
 
-# @dash.callback(
-#     [
-#         Output('output_data_upload', 'children'),
-#         Output("data_session_store", "data")
-#     ],
-#     [
-#         Input('data_tabs', 'value'),
-#         Input('upload_data', 'contents'),
-#         Input('upload_data', 'filename'),
-#         Input('upload_data', 'last_modified')
-#     ]
-# )
-# def update_output(tab, content, list_of_names, list_of_dates):
+@dash.callback(
+    Output('output_data_upload', 'children'),
+    [
+        Input('upload_data', 'contents'),
+        State('upload_data', 'filename'),
+        State('upload_data', 'last_modified')
+    ])
+def update_output(list_of_contents, list_of_names, list_of_dates):
 
-#     button_triggered = ctx.triggered_id
+    print(f"update_output: {list_of_contents}")
 
-#     if button_triggered == 'data_tabs':
+    if list_of_contents is not None:
+        children = [
+            parse_contents(c, n, d) for c, n, d in
+            zip(list_of_contents, list_of_names, list_of_dates)
+        ]
 
-#         output = None
-#         df_json = None
-
-#         return output, df_json
-
-#     else:
-
-#         if tab == 'tab_data_upload':
-
-#             date = datetime.datetime.fromtimestamp(list_of_dates)
-#             date = date.strftime("%m.%d.%Y %H:%M:%S")
-
-
-#             content_type, content_string = content.split(',')
-#             decoded = base64.b64decode(content_string)
-
-
-#             # if csv file upload file to data_session_store
-
-#             if "csv" in list_of_names:
-#                 df = pd.read_csv(io.StringIO(decoded.decode('utf-8')), sep=";")
-
-#             if "xls" in list_of_names:
-#                 df = pd.read_excel(io.BytesIO(decoded))
-
-#             if "xlsx" in list_of_names:
-#                 df = pd.read_excel(io.BytesIO(decoded))
-
-#             if "parquet" in list_of_names:
-#                 df = pd.read_parquet(io.BytesIO(decoded))
-
-
-#             output =  html.Div(
-#                 children=[
-#                     html.H3(list_of_names),
-#                     html.H3(date),
-#                     html.Hr(),  # horizontal line
-#                     html.H1(),
-#                     dash_table.DataTable(
-#                         df.head().to_dict('records'),     #with or without head?
-#                         [{'name': i, 'id': i} for i in df.columns],
-#                         style_table={
-#                             'overflowX': 'auto',
-#                             "width": "900px",
-#                             "height": "300px",
-#                             },
-#                         style_cell={
-#                             # all three widths are needed
-#                             'minWidth': '180px', 'width': '180px', 'maxWidth': '180px',
-#                             'overflow': 'hidden',
-#                             'textOverflow': 'ellipsis',
-#                         }
-#                     ),
-#                 ],
-#                 style={
-#                     "justify-content": "center",
-#                     }
-#             )
-
-#             df_json = df.to_json(date_format='iso', orient='split')
-
-#             return output, df_json
-
-
-
-# @dash.callback(
-#     Output('data_descriptive', 'children'),
-#     [
-#         Input('data_session_store', 'data')
-#     ]
-# )
-# def update_descriptive(df_json):
-#     # load data from data_session_store and make pandas describe for output
-#     if df_json is None:
-#         return None
-#     else:
-#         df = pd.read_json(df_json, orient='split')
-
-#         dft=df.describe().reset_index(drop = True).T
-#         dft = dft.reset_index(drop=False)
-#         dft.columns= ["description", "counts", "mean", "std", "min", "25%", "50%", "75%", "max"]
-#         dft["nan"]=df.isna().sum().values
-
-#         output_df=dft.round(2)
-
-#         output = html.Div(
-#             children=[
-#                 html.H1(),
-#                 dash_table.DataTable(
-#                     output_df.to_dict('records'),
-#                     [{'name': i, 'id': i} for i in output_df.columns],
-#                     style_table={
-#                         'overflowX': 'auto',
-#                         "width": "900px",
-#                         "height": "400px",
-#                         },
-#                     style_cell={
-#                         # all three widths are needed
-#                         'minWidth': '70px', 'width': '70px', 'maxWidth': '2500px',
-#                         'overflow': 'hidden',
-#                         'textOverflow': 'ellipsis',
-#                     }
-#                 ),
-#             ],
-#             style={
-#                 "justify-content": "center",
-#                 }
-#         )
-
-#     return output
-
+        return children
 
 
 # callback for the download of the ChemcialManufacturingProcess.parquet file

@@ -454,7 +454,7 @@ def validation_plot(df_original, df_predicted):
 
         # Residuals
         diff = df_original - df_predicted
-        fig_output.add_trace(go.Scatter(x=diff.index, y=diff, mode='markers', marker=dict(color='black', size = 12), name='diff'), row=2, col=1)
+        fig_output.add_trace(go.Scatter(x=diff.index, y=diff, mode='markers', marker=dict(color='black', size = 12,),  name='diff', ), row=2, col=1)
         fig_output.update_layout(title='Original vs. Predicted Values', xaxis_title='Index', yaxis_title=df_original.name)
 
     except Exception as e:
