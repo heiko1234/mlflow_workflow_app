@@ -38,7 +38,22 @@ dash.register_page(__name__,"/analysis")
 # )
 
 
+tabs_styles = {
+    'height': '44px'
+}
+tab_style = {
+    'borderBottom': '1px solid #d6d6d6',
+    'padding': '6px',
+    'fontWeight': 'bold'
+}
 
+tab_selected_style = {
+    'borderTop': '1px solid #d6d6d6',
+    'borderBottom': '1px solid #d6d6d6',
+    'backgroundColor': '#119DFF',
+    'color': 'white',
+    'padding': '6px'
+}
 
 
 
@@ -74,26 +89,32 @@ layout = html.Div(
                     header_text="Plot of Data",
                     content=[
                         html.Div([
-                            html.Div([
-                                # dropdown with columns
-                                dcc.Dropdown(id="dd_columns", style={"width": "200px"}),
-                                dcc.Dropdown(id="dd_transformation", style={"width": "200px"}),
-                                ],
-                                style={"display": "flex"}
-                            ),
-                            html.Div(
-                                [
-                                    dcc.Loading(id="analysisplot_card_content"),
-                                ],
-                                style={
-                                    "justify-content": "center",
-                                    "align-items": "center",
-                                    "display": "flex"
-                                }
-                            )
-                        ])
+                            dcc.Tabs(id="analysis_tabs", value="parallel", children=[
+                                dcc.Tab(label="Parallel Coordinate Plot", value="parallel", style=tab_style, selected_style=tab_selected_style),
+                                dcc.Tab(label="Controlchart Plot", value="control", style=tab_style, selected_style=tab_selected_style),
+                            ], style=tabs_styles),
+                            html.Div(id="analysisplot_card_content"),
+                            # html.Div([
+                            #     # dropdown with columns
+                            #     dcc.Dropdown(id="dd_columns", style={"width": "200px"}),
+                            #     dcc.Dropdown(id="dd_transformation", style={"width": "200px"}),
+                            #     ],
+                            #     style={"display": "flex"}
+                            # ),
+                            # html.Div(
+                            #     [
+                            #         dcc.Loading(id="analysisplot_card_content"),
+                            #     ],
+                            #     style={
+                            #         "justify-content": "center",
+                            #         "align-items": "center",
+                            #         "display": "flex"
+                            #     }
+                            # )
+                        ]
+                        )
                     ],
-                    height="700px",
+                    height="900px",
                     width="1700px",
                 ),
             ]
@@ -101,6 +122,51 @@ layout = html.Div(
     ]
 )
 
+
+@dash.callback(
+    Output("analysisplot_card_content", "children"),
+    Input("analysis_tabs", "value"),
+)
+def create_content_analysisplot_card_content(tab):
+
+    if tab == "parallel":
+        output = html.Div([
+            html.Div(
+                [
+                    dcc.Loading(id="analysisplot_card_parallel_content"),
+                ],
+                style={
+                    "justify-content": "center",
+                    "align-items": "center",
+                    "display": "flex"
+                }
+            )
+        ])
+
+    elif tab == "control":
+        output = html.Div([
+            html.Div([
+                # dropdown with columns
+                dcc.Dropdown(id="dd_columns", style={"width": "200px"}),
+                dcc.Dropdown(id="dd_transformation", style={"width": "200px"}),
+                ],
+                style={"display": "flex", "padding": "10px"}
+            ),
+            html.Div(
+                [
+                    dcc.Loading(id="analysisplot_card_control_content"),
+                ],
+                style={
+                    "justify-content": "center",
+                    "align-items": "center",
+                    "display": "flex"
+                }
+            )
+        ])
+    else:
+        output = None
+
+    return output
 
 
 
@@ -297,12 +363,12 @@ def update_dd_transformation(df_json):
 # analysisplot_card_content
 
 @dash.callback(
-    Output("analysisplot_card_content", "children"),
+    Output("analysisplot_card_control_content", "children"),
     Input("data_session_store", "data"),
     Input("dd_columns", "value"),
     Input("dd_transformation", "value"),
 )
-def update_analysisplot_card_content(data_dict, column, transformation):
+def update_analysisplot_card_control_content(data_dict, column, transformation):
     """Update the content of the analysis card"""
 
     if data_dict is None:
@@ -476,9 +542,49 @@ def update_project_target_feature_session_store(data):
 
 
 
+# callback to use target and features from sessionstore project_target_feature_session_store and create a parallel plot in analysisplot_card_parallel_content
+
+# TODO: work on this callback, API adjusted ;) only needs the parallelcoordinate plot done
+# @dash.callback(
+#     Output("analysisplot_card_parallel_content", "children"),
+#     Input("project_target_feature_session_store", "data"),
+#     State("data_session_store", "data"),
+# )
+# def create_parallel_plot(data, data_dict):
+
+#     if data_dict is None:
+#         return None
+
+#     else:
+
+#         headers = None
+#         endpoint = "data_selected_features"
+
+#         columns = [data["target"]]+data["features"]
+
+#         data_statistics_dict = {
+#             "blobcontainer": data_dict["blobcontainer"],
+#             "subcontainer": data_dict["subcontainer"],
+#             "file_name": data_dict["file_name"],
+#             "account": data_dict["account"],
+#             "features": columns
+#         }
 
 
+#         response = dataclient.Backendclient.execute_post(
+#             headers=headers,
+#             endpoint=endpoint,
+#             json=data_statistics_dict
+#             )
 
+#         if response.status_code == 200:
+#             output = response.json()
+#             data = output
+#             # data = pd.read_json(output, orient='split')
+#             data = [float(data[i]) for i in data.keys()]
+#             data = pd.DataFrame(data=data, columns=columns)
+            
+            
 
 
 
