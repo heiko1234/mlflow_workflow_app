@@ -124,11 +124,41 @@ layout = html.Div(
                     height="300px",
                     content=[
                         html.Div([
-                            html.H3("Modelversion: "),
-                            html.H4(id="model_version_id", style={"color": "blue", "margin-left": "10px"})
+                            html.Div([
+                                html.H3("Modelversion: "),
+                                html.H4(id="model_version_id", style={"color": "blue", "margin-left": "10px"})
+                                ],
+                                style = {
+                                    "width": "80%",
+                                    "margin-top": "20px",
+                                    "display": "flex",
+                                    "margin": "5px"
+                                    }
+                            ),
+                            html.Div([
+                                html.H3("R2 Training: "),
+                                html.H4(id="r2_training_id", style={"color": "blue", "margin-left": "10px",})
                             ],
-                            style = {"width": "80%", "margin-top": "20px", "display": "flex", "margin": "10px", "padding": "10px"}
-                        )
+                            style = {"width": "80%",
+                                "display": "flex",
+                                "margin": "5px"
+                                }
+                            ),
+                            html.Div([
+                                html.H3("R2 Test: "),
+                                html.H4(id="r2_test_id",
+                                    style={
+                                        "color": "blue",
+                                        "margin-left": "10px",
+                                    })
+                            ],
+                            style = {
+                                "width": "80%",
+                                "display": "flex",
+                                "margin": "5px"
+                            }
+                            ),
+                        ])
                     ]
                 ),
                 standard_card(
@@ -305,6 +335,68 @@ def get_model_version(model_selected, data_dict):
 
 
         return output
+
+
+
+
+@dash.callback(
+    [
+        Output("r2_training_id", "children"),
+        Output("r2_test_id", "children"),
+    ],
+    Input("model_download_dd", "value"),
+    State("data_session_store", "data")
+)
+def get_model_metrics(model_selected, data_dict):
+
+    try:
+        headers = None
+        endpoint = "get_model_artifact"
+
+
+        artifact_value = "metrics.json"
+
+        data_statistics_dict = {
+                "account": data_dict["account"],
+                "use_model_name": model_selected,
+                # "staging": "Staging"
+                "artifact": artifact_value,
+            }
+
+        response = dataclient.Backendclient.execute_post(
+            headers=headers,
+            endpoint=endpoint,
+            json=data_statistics_dict
+            )
+
+        if response.status_code == 200:
+            output = response.json()
+
+            print(f" get_model_metrics: {output}")
+
+            try:
+                r2_training = round(output["r2_training"], 3)
+                r2_test = round(output["r2_test"], 3)
+            except Exception as e:
+                print(f"get_model_metrics exception: {e}")
+                r2_training = None
+                r2_test = None
+
+        return r2_training, r2_test
+
+
+    except Exception as e:
+        print(f"get_model_version exception: {e}")
+
+        r2_training = None
+        r2_test = None
+
+        return r2_training, r2_test
+
+
+
+
+
 
 
 @dash.callback(

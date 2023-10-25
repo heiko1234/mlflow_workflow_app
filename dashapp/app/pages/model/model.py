@@ -567,14 +567,14 @@ def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, t
     if output == "Done":
         output = [
             html.Div([
-                html.P("Model trained successfully"),
+                html.P("Model trained successfully", style={"color": "green"}),
             ])
         ]
 
     else:
         output = [
             html.Div([
-                html.P("Model training failed"),
+                html.P("Model training failed", style={"color": "red"}),
             ])
         ]
 

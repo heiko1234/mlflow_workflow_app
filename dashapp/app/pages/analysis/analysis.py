@@ -11,6 +11,8 @@ from dash import html, dcc
 from dash.dependencies import Input, Output, State
 from dash import dash_table
 
+import plotly.express as px
+
 from app.utilities.cards import (
     standard_card,
     form_card
@@ -133,6 +135,7 @@ def create_content_analysisplot_card_content(tab):
         output = html.Div([
             html.Div(
                 [
+                    html.H3(""),
                     dcc.Loading(id="analysisplot_card_parallel_content"),
                 ],
                 style={
@@ -545,51 +548,74 @@ def update_project_target_feature_session_store(data):
 # callback to use target and features from sessionstore project_target_feature_session_store and create a parallel plot in analysisplot_card_parallel_content
 
 # TODO: work on this callback, API adjusted ;) only needs the parallelcoordinate plot done
-# @dash.callback(
-#     Output("analysisplot_card_parallel_content", "children"),
-#     Input("project_target_feature_session_store", "data"),
-#     State("data_session_store", "data"),
-# )
-# def create_parallel_plot(data, data_dict):
+@dash.callback(
+    Output("analysisplot_card_parallel_content", "children"),
+    Input("project_target_feature_session_store", "data"),
+    State("data_session_store", "data"),
+)
+def create_parallel_plot(data_target_features, data_dict):
 
-#     if data_dict is None:
-#         return None
+    if data_dict is None:
+        return None
 
-#     else:
+    else:
 
-#         headers = None
-#         endpoint = "data_selected_features"
-
-#         columns = [data["target"]]+data["features"]
-
-#         data_statistics_dict = {
-#             "blobcontainer": data_dict["blobcontainer"],
-#             "subcontainer": data_dict["subcontainer"],
-#             "file_name": data_dict["file_name"],
-#             "account": data_dict["account"],
-#             "features": columns
-#         }
+        headers = None
+        endpoint = "data_selected_features"
 
 
-#         response = dataclient.Backendclient.execute_post(
-#             headers=headers,
-#             endpoint=endpoint,
-#             json=data_statistics_dict
-#             )
+        if data_target_features["target"] is not None:
+            columns = [data_target_features["target"]]
+        else:
+            columns = []
 
-#         if response.status_code == 200:
-#             output = response.json()
-#             data = output
-#             # data = pd.read_json(output, orient='split')
-#             data = [float(data[i]) for i in data.keys()]
-#             data = pd.DataFrame(data=data, columns=columns)
-            
-            
+        if data_target_features["features"] is not None:
+            columns = columns + data_target_features["features"]
 
 
+        if len(columns) != 0:
+
+            data_statistics_dict = {
+                "blobcontainer": data_dict["blobcontainer"],
+                "subcontainer": data_dict["subcontainer"],
+                "file_name": data_dict["file_name"],
+                "account": data_dict["account"],
+                "features": columns
+            }
 
 
+            response = dataclient.Backendclient.execute_post(
+                headers=headers,
+                endpoint=endpoint,
+                json=data_statistics_dict
+                )
 
 
+            if response.status_code == 200:
+                output = response.json()
+
+                print(f"create_parallel_plot: {output}")
+
+
+                data = pd.read_json(output, orient='split')
+
+
+                fig = px.parallel_coordinates(data, color=data_target_features["target"], )
+
+
+                output = dcc.Graph(
+                    id="parallelplot",
+                    figure=fig,
+                    style={
+                        "width": "1600px",
+                        "height": "650px",
+                        "justify-content": "center",
+                        }
+                )
+
+                return output
+
+        else:
+            return None
 
 
