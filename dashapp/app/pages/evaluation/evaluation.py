@@ -35,10 +35,14 @@ from app.utilities.plots import (
 import mlflow
 from pathlib import PurePosixPath
 
+from app.utilities.api_call_clients import APIBackendClient
 from dotenv import load_dotenv
 
 
 load_dotenv()
+
+
+dataclient=APIBackendClient()
 
 
 
@@ -70,12 +74,12 @@ def get_mlflow_model(model_name, azure=True, staging="Staging"):
             print("Staging must be either 'Staging' or 'Production'. Default: Staging")
             model_stage = os.getenv("MLFLOW_MODEL_STAGE", "Staging")
             artifact_path = PurePosixPath(azure_model_dir).joinpath(model_name, model_stage)
-        
+
         artifact_path
 
         model = mlflow.pyfunc.load_model(str(artifact_path))
         print(f"Model {model_name} loaden from Azure: {artifact_path}")
-        
+
     return model
 
 
@@ -189,7 +193,7 @@ def get_evaluation_data(contents, filename):
     if contents is not None:
         content_type, content_string = contents.split(',')
         decoded = base64.b64decode(content_string)
-        
+
         if "csv" in filename:
             df = pd.read_csv(io.StringIO(decoded.decode('utf-8')), sep=";")
 
@@ -204,9 +208,9 @@ def get_evaluation_data(contents, filename):
 
 
         output=df.to_json(date_format='iso', orient='split')
-        
+
         print(f"uploaded outputdata: {output}" )
-        
+
     return output
 
 
@@ -216,29 +220,69 @@ def get_evaluation_data(contents, filename):
     [
         Input("project_evaluation_session_store", "data"),
         Input("project_model_name_session_store", "data"),
+        State("data_session_store", "data"),
     ]
 )
-def make_evaluation_graphic(data, model_name):
+def make_evaluation_graphic(data, model_name, data_dict):
 
     if data is not None:
         print(f"make_evaluation_graphic data is not none")
         try:
             df = pd.read_json(data, orient='split')
+            # df = df.to_dict(orient="records")
+            df = df.to_dict(orient="records")
 
-            # mlflow_model = get_mlflow_model(model_name=model_name, azure=True, staging="Staging")
+            # # mlflow_model = get_mlflow_model(model_name=model_name, azure=True, staging="Staging")
 
-            target = "Yield"
-            target_string = target+"_evaluation"
+            # target = "Yield"
+            # target_string = target+"_evaluation"
 
-            # df[target_string] = mlflow_model.predict(df)
+            # # df[target_string] = mlflow_model.predict(df)
 
-            df[target_string] = df[target]-0.7
+            # df[target_string] = df[target]-0.7
 
-            fig = validation_plot(df[target], df[target_string])
 
-            output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
 
-            return output
+            if data_dict is None:
+                return None
+
+            else:
+                headers = None
+                endpoint = "model_prediction_send_data"
+
+                data_statistics_dict = {
+                    "account": data_dict["account"],
+                    "use_model_name": model_name,
+                    "data_dict": df
+                }
+
+                print(f"data_statistics_dict: {data_statistics_dict}")
+
+                response = dataclient.Backendclient.execute_post(
+                    headers=headers,
+                    endpoint=endpoint,
+                    json=data_statistics_dict
+                    )
+
+                print(f"make evaluation graphic: {response.status_code}")
+
+
+                if response.status_code == 200:
+                    output = response.json()
+
+
+                    # # vielleicht so:
+                    # load_IO = io.StringIO()
+                    # output = load_IO(output)
+
+                    output_df = pd.read_json(output, orient="split")
+                    print(f"output_df: {output_df}")
+
+                    fig = validation_plot(output_df.iloc[:,0])
+
+                    output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
+
+                    return output
 
 
         except Exception as e:

@@ -334,6 +334,8 @@ def update_model_parameters_loading(model_selection):
         # {"label": "AdaBoostRegressor", "value": "AdaBoostRegressor"},
         # {"label": "NeuralNetwork", "value": "NeuralNetwork"},
 
+    # print(f"update model parameters loading: {model_selection}")
+
     if model_selection == "LinearRegression":
         output = [
             html.Div([
@@ -450,6 +452,53 @@ def update_model_parameters_loading(model_selection):
     return output
 
 
+# callback to save based on model_selection value the model parameters to a dict
+
+@dash.callback(
+    [
+        Output("project_model_configurartion_session_store", "data"),
+    ],
+    [
+        Input("model_selection", "value"),
+        Input({"type": "model_parameters", "index": dash.ALL}, "value")
+        # Input("model_parameters_alpha", "value"),
+        # Input("model_parameters_n_estimators", "value"),
+        # Input("model_parameters_max_depth", "value"),
+        # Input("model_parameters_min_samples_split", "value"),
+        # Input("model_parameters_min_samples_leaf", "value"),
+        # Input("model_parameters_max_features", "value"),
+    ]
+)
+def save_model_parameters(model_selection,
+        type_inputs
+        # alpha,
+        # n_estimators, max_depth, min_samples_split, min_samples_leaf, max_features
+        ):
+
+        print(f"save_model_parameters: {type_inputs}")
+
+        if model_selection == "LinearRegression":
+            model_parameters_dict = {}
+
+        elif model_selection == "Ridge":
+            model_parameters_dict = {
+                # "alpha": alpha,
+            }
+
+        # elif model_selection == "RandomForestRegressor":
+        #     model_parameters_dict = {
+        #         "n_estimators": n_estimators,
+        #         "max_depth": max_depth,
+        #         "min_samples_split": min_samples_split,
+        #         "min_samples_leaf": min_samples_leaf,
+        #         "max_features": max_features,
+        #     }
+        else:
+            model_parameters_dict = {}
+
+        print(f"model parameters dict: {model_parameters_dict}")
+
+        return model_parameters_dict
 
 
 @dash.callback(
@@ -466,9 +515,10 @@ def update_model_parameters_loading(model_selection):
         State("data_splitter", "value"),
         State("data_scaler", "value"),
         State("model_selection", "value"),
+        State("project_model_configurartion_session_store","data")
     ]
 )
-def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, transformation_dict, data_dict, data_splitter, data_scaler, model_selection):
+def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, transformation_dict, data_dict, data_splitter, data_scaler, model_selection, model_configs):
 
     headers = None
     endpoint = "train_model"
@@ -523,6 +573,12 @@ def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, t
 
     scaler_expand_by = "std"   # or None
     model_parameters = None
+
+    # TODO: add model parameters
+    data_scaler # not used so far
+    model_parameters # needs to be modeified
+
+    # print(f"train model callback, see model configs: {model_configs}")
 
 
 

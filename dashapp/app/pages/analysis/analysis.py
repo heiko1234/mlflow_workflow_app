@@ -594,7 +594,7 @@ def create_parallel_plot(data_target_features, data_dict):
             if response.status_code == 200:
                 output = response.json()
 
-                print(f"create_parallel_plot: {output}")
+                # print(f"create_parallel_plot: {output}")
 
 
                 data = pd.read_json(output, orient='split')

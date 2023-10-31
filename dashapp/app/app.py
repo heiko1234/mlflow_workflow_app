@@ -49,6 +49,9 @@ project_data_evaluation_session_store = dcc.Store(
 project_model_name_session_store = dcc.Store(
     id = "project_model_name_session_store", storage_type="session"
 )
+project_model_configuration_session_store = dcc.Store(
+    id="project_model_configurartion_session_store", storage_type="session"
+)
 
 
 # localhost/dashapp/pages_id
@@ -104,6 +107,7 @@ app.layout = html.Div(
         project_data_spc_transformation_cleaning_session_store,
         project_data_evaluation_session_store,
         project_model_name_session_store,
+        project_model_configuration_session_store,
         html.Div(
             [
                 dash.page_container

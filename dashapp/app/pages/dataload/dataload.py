@@ -4,6 +4,7 @@
 import base64
 import datetime
 import io
+import os
 
 import pandas as pd
 
@@ -20,6 +21,10 @@ from app.utilities.cards import (
     standard_card,
     form_card
 )
+
+from azure.identity import DefaultAzureCredential
+from azure.storage.blob import BlobServiceClient, ContainerClient, BlobClient, BlobBlock
+
 
 
 from app.utilities.api_call_clients import APIBackendClient
@@ -319,24 +324,109 @@ def render_content(tab):
 
 
 
+# callback to use data from upload_data to write in Blobstorage
 @dash.callback(
-    Output('output_data_upload', 'children'),
+    Output("output_data_upload", "children"),
     [
-        Input('upload_data', 'contents'),
-        State('upload_data', 'filename'),
-        State('upload_data', 'last_modified')
-    ])
-def update_output(list_of_contents, list_of_names, list_of_dates):
+        Input("upload_data", "contents"),
+        State("upload_data", "filename"),
+        State("upload_data", "last_modified")
+    ]
+)
+def upload_data_to_testblobstorage(
+    list_of_contents,
+    list_of_names,
+    list_of_dates
+):
 
-    print(f"update_output: {list_of_contents}")
+    # print(f"upload_data_to_testblob:")
 
-    if list_of_contents is not None:
-        children = [
-            parse_contents(c, n, d) for c, n, d in
-            zip(list_of_contents, list_of_names, list_of_dates)
-        ]
 
-        return children
+    contents = list_of_contents
+    filename = list_of_names
+
+    # print(f"upload data to testblob: {contents}")
+    # print(f"upload data to testblob: {filename}")
+
+    content_type, content_string = contents.split(',')
+
+    decoded = base64.b64decode(content_string)
+    try:
+        if 'csv' in filename:
+            message = "csv"
+            # Assume that the user uploaded a CSV file
+            df = pd.read_csv(
+                io.StringIO(decoded.decode('utf-8')))
+        elif 'xls' in filename:
+            message = "xls"
+            # Assume that the user uploaded an excel file
+            df = pd.read_excel(io.BytesIO(decoded))
+
+        elif "parquet" in filename:
+            message = "parquet"
+            df = pd.read_parquet(io.BytesIO(decoded))
+
+
+        dfa = df.head()
+
+        print(f"upload data to testblob: {dfa}")
+
+    except Exception as e:
+        print(f"upload_data_testblobstorage exception: {e}")
+
+    # code for uplod df to blobstorage with py arrow datasets
+    # TODO: hier weitermachen
+
+
+    local_run = os.getenv("LOCAL_RUN", False)
+
+    if local_run:
+
+        account = "devstoreaccount1"
+        credential = os.getenv("AZURE_STORAGE_KEY")
+
+
+    else:
+
+        account = os.environ["AZURE_STORAGE_ACCOUNT"]
+        # credential = os.environ["AZURE_STORAGE_KEY"]
+        credential = DefaultAzureCredential(exclude_environment_credential=True)
+
+    # # upload data df to blobstorage via pyarrow
+
+    # blob_service_client = BlobServiceClient(
+    #     account_url=f"https://{account}.blob.core.windows.net",
+    #     credential=credential
+    # )
+    # # upload df to blobstorage via pyarrow
+    # container_client = blob_service_client.get_container_client("chemical-data")
+    # blob_client = container_client.get_blob_client("ChemicalManufacturingProcess.parquet")
+    
+
+
+    return html.H3("Done")
+
+
+
+
+# @dash.callback(
+#     Output('output_data_upload', 'children'),
+#     [
+#         Input('upload_data', 'contents'),
+#         State('upload_data', 'filename'),
+#         State('upload_data', 'last_modified')
+#     ])
+# def update_output(list_of_contents, list_of_names, list_of_dates):
+
+#     print(f"update_output: {list_of_contents}")
+
+#     if list_of_contents is not None:
+#         children = [
+#             parse_contents(c, n, d) for c, n, d in
+#             zip(list_of_contents, list_of_names, list_of_dates)
+#         ]
+
+#         return children
 
 
 # callback for the download of the ChemcialManufacturingProcess.parquet file
