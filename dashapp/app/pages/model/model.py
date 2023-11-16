@@ -348,7 +348,7 @@ def update_model_parameters_loading(model_selection):
                 html.Div([
                     html.H3("Alpha"),
                     dcc.Input(
-                        id="model_parameters_alpha",
+                        id={"type": "model_parameters", "index": "alpha"}, # id="model_parameters_alpha",
                         type="number",
                         value=1,
                         min=0,
@@ -367,7 +367,7 @@ def update_model_parameters_loading(model_selection):
                 html.Div([
                     html.H3("n_estimators"),
                     dcc.Input(
-                        id="model_parameters_n_estimators",
+                        id={"type": "model_parameters", "index": "n_estimators"}, # id="model_parameters_n_estimators",
                         type="number",
                         value=100,
                         min=0,
@@ -382,7 +382,7 @@ def update_model_parameters_loading(model_selection):
                 html.Div([
                     html.H3("max_depth"),
                     dcc.Input(
-                        id="model_parameters_max_depth",
+                        id={"type": "model_parameters", "index": "max_depth"}, # id="model_parameters_max_depth",
                         type="number",
                         value=10,
                         min=0,
@@ -397,7 +397,7 @@ def update_model_parameters_loading(model_selection):
                 html.Div([
                     html.H3("min_samples_split"),
                     dcc.Input(
-                        id="model_parameters_min_samples_split",
+                        id={"type": "model_parameters", "index": "min_samples_split"}, # id="model_parameters_min_samples_split",
                         type="number",
                         value=2,
                         min=0,
@@ -412,7 +412,7 @@ def update_model_parameters_loading(model_selection):
                 html.Div([
                     html.H3("min_samples_leaf"),
                     dcc.Input(
-                        id="model_parameters_min_samples_leaf",
+                        id={"type": "model_parameters", "index": "min_samples_leaf"}, # id="model_parameters_min_samples_leaf",
                         type="number",
                         value=1,
                         min=0,
@@ -427,7 +427,7 @@ def update_model_parameters_loading(model_selection):
                 html.Div([
                     html.H3("max_features"),
                     dcc.Input(
-                        id="model_parameters_max_features",
+                        id={"type": "model_parameters", "index": "max_features"}, #"model_parameters_max_features",
                         type="number",
                         value=1,
                         min=0,
@@ -455,9 +455,7 @@ def update_model_parameters_loading(model_selection):
 # callback to save based on model_selection value the model parameters to a dict
 
 @dash.callback(
-    [
-        Output("project_model_configurartion_session_store", "data"),
-    ],
+    Output("project_model_configurartion_session_store", "data"),
     [
         Input("model_selection", "value"),
         Input({"type": "model_parameters", "index": dash.ALL}, "value")
@@ -469,13 +467,14 @@ def update_model_parameters_loading(model_selection):
         # Input("model_parameters_max_features", "value"),
     ]
 )
-def save_model_parameters(model_selection,
+def save_model_parameters(
+        model_selection,
         type_inputs
         # alpha,
         # n_estimators, max_depth, min_samples_split, min_samples_leaf, max_features
         ):
 
-        print(f"save_model_parameters: {type_inputs}")
+        # print(f"save_model_parameters: {type_inputs}")
 
         if model_selection == "LinearRegression":
             model_parameters_dict = {}
@@ -483,23 +482,48 @@ def save_model_parameters(model_selection,
         elif model_selection == "Ridge":
             model_parameters_dict = {
                 # "alpha": alpha,
+                "alpha": type_inputs[0],
             }
 
-        # elif model_selection == "RandomForestRegressor":
-        #     model_parameters_dict = {
-        #         "n_estimators": n_estimators,
-        #         "max_depth": max_depth,
-        #         "min_samples_split": min_samples_split,
-        #         "min_samples_leaf": min_samples_leaf,
-        #         "max_features": max_features,
-        #     }
+        elif model_selection == "RandomForestRegressor":
+            model_parameters_dict = {
+                "n_estimators": type_inputs[0],
+                "max_depth": type_inputs[1],
+                "min_samples_split": type_inputs[2],
+                "min_samples_leaf": type_inputs[3],
+                "max_features": type_inputs[4],
+            }
         else:
+            # TODO: write more model inputs, pattern matching
             model_parameters_dict = {}
 
-        print(f"model parameters dict: {model_parameters_dict}")
+        print(f"model parameters dict final: {model_parameters_dict}")
 
         return model_parameters_dict
 
+
+
+# TODO: remove test callback
+
+# @dash.callback(
+#     Output("model_training_feedback_loading", "children"),
+#     [
+#         Input("submit-model", "n_clicks"),
+#         State("project_model_configurartion_session_store","data")
+#     ]
+# )
+# def show_inputs(n_clicks, model_configs):
+
+
+#     print(f"train model callback, see model configs: {model_configs}")
+
+#     output = html.H3("any output")
+
+#     return output
+
+
+
+# TODO
 
 @dash.callback(
     [
@@ -515,10 +539,11 @@ def save_model_parameters(model_selection,
         State("data_splitter", "value"),
         State("data_scaler", "value"),
         State("model_selection", "value"),
-        State("project_model_configurartion_session_store","data")
+        State("project_model_configurartion_session_store","data"),
+        State("project_basic_session_store", "data"),
     ]
 )
-def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, transformation_dict, data_dict, data_splitter, data_scaler, model_selection, model_configs):
+def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, transformation_dict, data_dict, data_splitter, data_scaler, model_selection, model_configs, model_basics):
 
     headers = None
     endpoint = "train_model"
@@ -575,10 +600,18 @@ def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, t
     model_parameters = None
 
     # TODO: add model parameters
+    # TODO: Done
     data_scaler # not used so far
     model_parameters # needs to be modeified
+    model_configs # model_parametres
 
-    # print(f"train model callback, see model configs: {model_configs}")
+    print(f"train model callback, see model configs: {model_configs}")
+    print("use model configs")
+    model_parameters = model_configs
+
+    # TODO, take model_basics["projectname"] as modelname, like "projectname" + maybe the target
+    # project_basic_session_store["projectname"], project_basic_session_store["organization"], project_basic_session_store["project_manager_name"]
+    print(f"train model callback, see model basics: {model_basics}")
 
 
 

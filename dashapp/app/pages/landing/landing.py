@@ -110,3 +110,25 @@ def update_project_basic_session_store(n_clicks, projectname, organization, proj
     output = {"projectname": projectname, "organization": organization, "project_manager_name": project_manager_name}
     return output
 
+
+
+# make default values for the landing page when project_basic_session_store is empty
+
+@dash.callback(
+    [
+        Output('i_projectname', 'value'),
+        Output('i_organization', 'value'),
+        Output('i_project_manager_name', 'value'),
+    ],
+    Input('project_basic_session_store', 'data')
+)
+def make_default_values_for_all_inputs(project_basic_session_store):
+
+    print("make_default_values_for_all_inputs got activated, landingpage")
+    print(f"project_basic_session_store: {project_basic_session_store}")
+
+    if (project_basic_session_store["projectname"] is None) and (project_basic_session_store["organization"] is None) and (project_basic_session_store["project_manager_name"] is None):
+        return "projectname", "organization", "projectleader"
+    else:
+        return project_basic_session_store["projectname"], project_basic_session_store["organization"], project_basic_session_store["project_manager_name"]
+
