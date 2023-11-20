@@ -441,7 +441,7 @@ def control_chart_marginal(data, y_name, xlabel= None, title = "Controlchart", l
 
 
 
-def validation_plot(df_original, df_predicted): 
+def validation_plot(df_original=None, df_predicted=None):
 
     try:
 
@@ -449,13 +449,20 @@ def validation_plot(df_original, df_predicted):
 
 
         # Main plot
-        fig_output.add_trace(go.Scatter(x=df_original.index, y=df_original, mode='markers', marker=dict(color='blue', size = 12), name='original'), row=1, col=1)
-        fig_output.add_trace(go.Scatter(x=df_predicted.index, y=df_predicted, mode='markers', marker=dict(color='red', size = 12), name='prediction'), row=1, col=1)
+        if df_original is not None:
+            fig_output.add_trace(go.Scatter(x=df_original.index, y=df_original, mode='markers', marker=dict(color='blue', size = 12), name='original'), row=1, col=1)
+        if df_predicted is not None:
+            fig_output.add_trace(go.Scatter(x=df_predicted.index, y=df_predicted, mode='markers', marker=dict(color='red', size = 12), name='prediction'), row=1, col=1)
 
         # Residuals
-        diff = df_original - df_predicted
-        fig_output.add_trace(go.Scatter(x=diff.index, y=diff, mode='markers', marker=dict(color='black', size = 12,),  name='diff', ), row=2, col=1)
-        fig_output.update_layout(title='Original vs. Predicted Values', xaxis_title='Index', yaxis_title=df_original.name)
+        if (df_predicted is not None) and (df_original is not None):
+            diff = df_original - df_predicted
+            fig_output.add_trace(go.Scatter(x=diff.index, y=diff, mode='markers', marker=dict(color='black', size = 12,),  name='diff', ), row=2, col=1)
+
+        try:
+            fig_output.update_layout(title='Original vs. Predicted Values', xaxis_title='Index', yaxis_title=df_original.name)
+        except:
+            fig_output.update_layout(title='Original vs. Predicted Values', xaxis_title='Index', yaxis_title="Prediction")
 
     except Exception as e:
         print(e)

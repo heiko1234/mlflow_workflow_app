@@ -458,6 +458,7 @@ def update_model_parameters_loading(model_selection):
     Output("project_model_configurartion_session_store", "data"),
     [
         Input("model_selection", "value"),
+        # pattern matching callback
         Input({"type": "model_parameters", "index": dash.ALL}, "value")
         # Input("model_parameters_alpha", "value"),
         # Input("model_parameters_n_estimators", "value"),

@@ -215,6 +215,7 @@ def get_evaluation_data(contents, filename):
 
 
 
+# TODO: work on this callback, and the pondon in the api, not working yet
 @dash.callback(
     Output("output_evaluation", "children"),
     [
@@ -225,12 +226,37 @@ def get_evaluation_data(contents, filename):
 )
 def make_evaluation_graphic(data, model_name, data_dict):
 
+    headers = None
+    endpoint = "get_model_artifact"
+
+    data_statistics_dict = {
+        "account": data_dict["account"],
+        "use_model_name": model_name,
+        "artifact": "target_limits.json"
+    }
+
+    response = dataclient.Backendclient.execute_post(
+        headers=headers,
+        endpoint=endpoint,
+        json=data_statistics_dict
+    )
+
+    response.status_code     # 200
+
+    if response.status_code == 200:
+        output = response.json()
+
+
+    target_key = list(output.keys())[0]
+    print(target_key)
+
+
     if data is not None:
         print(f"make_evaluation_graphic data is not none")
         try:
             df = pd.read_json(data, orient='split')
             # df = df.to_dict(orient="records")
-            df = df.to_dict(orient="records")
+            df_dict = df.to_dict(orient="records")
 
             # # mlflow_model = get_mlflow_model(model_name=model_name, azure=True, staging="Staging")
 
@@ -253,10 +279,8 @@ def make_evaluation_graphic(data, model_name, data_dict):
                 data_statistics_dict = {
                     "account": data_dict["account"],
                     "use_model_name": model_name,
-                    "data_dict": df
+                    "data_dict": df_dict
                 }
-
-                print(f"data_statistics_dict: {data_statistics_dict}")
 
                 response = dataclient.Backendclient.execute_post(
                     headers=headers,
@@ -264,7 +288,7 @@ def make_evaluation_graphic(data, model_name, data_dict):
                     json=data_statistics_dict
                     )
 
-                print(f"make evaluation graphic: {response.status_code}")
+                print("### ####")
 
 
                 if response.status_code == 200:
@@ -276,9 +300,16 @@ def make_evaluation_graphic(data, model_name, data_dict):
                     # output = load_IO(output)
 
                     output_df = pd.read_json(output, orient="split")
-                    print(f"output_df: {output_df}")
 
-                    fig = validation_plot(output_df.iloc[:,0])
+                    try:
+                        original_df = df[target_key]
+                    except Exception as e:
+                        print(e)
+                        original_df = None
+
+                    # original_df = None
+
+                    fig = validation_plot(df_original=original_df, df_predicted=output_df.iloc[:,0])
 
                     output = dcc.Graph(figure=fig, style={"width": "1700px", "height": "700px"})
 
