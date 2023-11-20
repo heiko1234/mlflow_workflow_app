@@ -238,7 +238,8 @@ def update_model_selection(model_selection):
         {"label": "Ridge", "value": "Ridge"},
         {"label": "RandomForestRegressor", "value": "RandomForestRegressor"},
         {"label": "DecisionTreeRegressor", "value": "DecisionTreeRegressor"},
-        {"label": "AdaBoostRegressor", "value": "AdaBoostRegressor"},
+        # {"label": "AdaBoostRegressor", "value": "AdaBoostRegressor"},
+        {"label": "ElasticNet", "value": "ElasticNet"},
         {"label": "NeuralNetwork", "value": "NeuralNetwork"},
     ]
 
@@ -300,9 +301,9 @@ def update_data_splitter(data_splitter):
         {"label": "40 % test", "value": "40 % test"},
         {"label": "50 % test", "value": "50 % test"},
         {"label": "-----------", "value": ""},
-        {"label": "KFold", "value": "KFold"},
-        {"label": "RepeatedKFold", "value": "RepeatedKFold"},
-        {"label": "ShuffleSplit", "value": "ShuffleSplit"},
+        # {"label": "KFold", "value": "KFold"},
+        # {"label": "RepeatedKFold", "value": "RepeatedKFold"},
+        # {"label": "ShuffleSplit", "value": "ShuffleSplit"},
     ]
 
     if data_splitter is None:
@@ -441,6 +442,206 @@ def update_model_parameters_loading(model_selection):
                 ),
             ])
         ]
+    # TODO
+    elif model_selection == "DecisionTreeRegressor":
+        output = [
+            html.Div([
+                html.Div([
+                    html.H3("max_depth"),
+                    dcc.Input(
+                        id={"type": "model_parameters", "index": "max_depth"}, # id="model_parameters_max_depth",
+                        type="number",
+                        value=10,
+                        min=0,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    ),
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("min_samples_split"),
+                    dcc.Input(
+                        id={"type": "model_parameters", "index": "min_samples_split"}, # id="model_parameters_min_samples_split",
+                        type="number",
+                        value=2,
+                        min=0,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    ),
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("min_samples_leaf"),
+                    dcc.Input(
+                        id={"type": "model_parameters", "index": "min_samples_leaf"}, # id="model_parameters_min_samples_leaf",
+                        type="number",
+                        value=1,
+                        min=1,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    )
+                ],
+                style = {"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("min_weight_fraction_leaf"),
+                    dcc.Input(
+                        id={"type": "model_parameter", "index": "min_weight_fraction_leaf"}, # id="model_parameters_min_weight_fraction_leaf",
+                        type="number",
+                        value=0.0,
+                        min=0.0,
+                        max=1.0,
+                        step=0.01,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"},
+                    )
+                ],
+                style = {"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("max_features"),
+                    dcc.Input(
+                        id={"type": "model_parameter", "index": "max_features"}, # id="model_parameters_max_features",
+                        type="number",
+                        value=1,
+                        min=0,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"}
+                    )
+                ],
+                style = {"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("max_leaf_nodes"),
+                    dcc.Input(
+                        id={"type": "model_parameter", "index": "max_leaf_nodes"}, # id="model_parameters_max_leaf_nodes",
+                        type="number",
+                        value=None,
+                        min=0,
+                        max=100,
+                        step=1,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"}
+                    )
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+                ),
+                html.Div([
+                    html.H3("min_impurity_decrease"),
+                    dcc.Input(
+                        id={"type": "model_parameter", "index": "min_impurity_decrease"}, # id="model_parameters_min_impurity_decrease",
+                        type="number",
+                        value=0.0,
+                        min=0.0,
+                        max=0.01,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"}
+                    )
+                ],
+                style = {"display": "flex", "margin": "1em",  "justify-content": "left"}
+                )
+            ])
+        ]
+
+    # TODO
+    elif model_selection == "ElasticNet":
+        output = [
+            html.Div([
+                html.Div([
+                    html.H3("alpha"),
+                    dcc.Input(
+                        id={"type": "model_parameters", "index": "alpha"}, # id="model_parameters_alpha",
+                        type="number",
+                        value=1.0,
+                        min=0.0,
+                        max=1.0,
+                        step=0.01,
+                        size="40",
+                        style={"width": "150px", "height": "35px", "margin": "1em"}
+                    )
+                ],
+                style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+            ),
+            html.Div([
+                html.H3("l1_ratio"),
+                dcc.Input(
+                    id={"type": "model_parameters", "index": "l1_ratio"}, # id="model_parameters_l1_ratio",
+                    type="number",
+                    value=0.5,
+                    min=0.0,
+                    max=1.0,
+                    step=0.01,
+                    size="40",
+                    style={"width": "150px", "height": "35px", "margin": "1em"}
+                )
+            ],
+            style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+            ),
+            html.Div([
+                html.H3("fit_intercept"),
+                dcc.Dropdown(
+                    id={"type": "model_parameters", "index": "fit_intercept"}, # id="model_parameters_fit_intercept",
+                    options=[
+                        {"label": "True", "value": True},
+                        {"label": "False", "value": False},
+                    ],
+                    value=True,
+                    style={"width": "150px", "height": "35px", "margin": "1em"}
+                )
+            ],
+            style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+            ),
+            html.Div([
+                html.H3("max_iter"),
+                dcc.Input(
+                    id={"type": "model_parameters", "index": "max_iter"}, # id="model_parameters_max_iter",
+                    type="number",
+                    value=1000,
+                    min=0,
+                    max=10000,
+                    step=10,
+                    size="40",
+                    style={"width": "150px", "height": "35px", "margin": "1em"}
+                )
+            ],
+            style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+            ),
+            html.Div([
+                html.H3("tol"),
+                dcc.Input(
+                    id={"type": "model_parameters", "index": "tol"}, # id="model_parameters_tol",
+                    type="number",
+                    value=0.0001,
+                    min=0.0001,
+                    max=1.0,
+                    step=0.0001,
+                    size="40",
+                    style={"width": "150px", "height": "35px", "margin": "1em"}
+                )
+            ],
+            style={"display": "flex", "margin": "1em",  "justify-content": "left"}
+            ),
+        ])
+    ]
+
+
+    elif model_selection == "mlp":
+        output = [
+            html.Div([
+                html.P("No parameters to adjust"),
+            ])
+        ]
+
     else:
         output = [
             html.Div([
@@ -460,19 +661,11 @@ def update_model_parameters_loading(model_selection):
         Input("model_selection", "value"),
         # pattern matching callback
         Input({"type": "model_parameters", "index": dash.ALL}, "value")
-        # Input("model_parameters_alpha", "value"),
-        # Input("model_parameters_n_estimators", "value"),
-        # Input("model_parameters_max_depth", "value"),
-        # Input("model_parameters_min_samples_split", "value"),
-        # Input("model_parameters_min_samples_leaf", "value"),
-        # Input("model_parameters_max_features", "value"),
     ]
 )
 def save_model_parameters(
         model_selection,
         type_inputs
-        # alpha,
-        # n_estimators, max_depth, min_samples_split, min_samples_leaf, max_features
         ):
 
         # print(f"save_model_parameters: {type_inputs}")
@@ -494,6 +687,30 @@ def save_model_parameters(
                 "min_samples_leaf": type_inputs[3],
                 "max_features": type_inputs[4],
             }
+
+        elif model_selection == "DecisionTreeRegressor":
+            model_parameters_dict = {
+                "max_depth": type_inputs[0],
+                "min_samples_split": type_inputs[1],
+                "min_samples_leaf": type_inputs[2],
+                "min_weight_fraction_leaf": type_inputs[3],
+                "max_features": type_inputs[4],
+                "max_leaf_nodes": type_inputs[5],
+                "min_impurity_decrease": type_inputs[6],
+            }
+
+        elif model_parameters_dict == "ElasticNet":
+            model_parameters_dict = {
+                "alpha": type_inputs[0],
+                "l1_ratio": type_inputs[1],
+                "fit_intercept": type_inputs[2],
+                "max_iter": type_inputs[3],
+                "tol": type_inputs[4],
+            }
+
+        elif model_parameters_dict == "mlp":
+            model_parameters_dict = {}
+
         else:
             # TODO: write more model inputs, pattern matching
             model_parameters_dict = {}
@@ -502,25 +719,6 @@ def save_model_parameters(
 
         return model_parameters_dict
 
-
-
-# TODO: remove test callback
-
-# @dash.callback(
-#     Output("model_training_feedback_loading", "children"),
-#     [
-#         Input("submit-model", "n_clicks"),
-#         State("project_model_configurartion_session_store","data")
-#     ]
-# )
-# def show_inputs(n_clicks, model_configs):
-
-
-#     print(f"train model callback, see model configs: {model_configs}")
-
-#     output = html.H3("any output")
-
-#     return output
 
 
 
@@ -591,7 +789,8 @@ def train_model(n_clicks, dict_target_feature, spc_cleaning_dict, limits_dict, t
             "DecisionTreeRegressor": "decision_tree",
             "Ridge": "ridge",
             "ElasticNet": "elastic_net",
-            "AdaBoostRegressor": "ada_boost",
+            # "AdaBoostRegressor": "ada_boost",
+            "NeuralNetwork": "mlp"
         }
         model_selection_value = model_selection_dict[model_selection]
 
