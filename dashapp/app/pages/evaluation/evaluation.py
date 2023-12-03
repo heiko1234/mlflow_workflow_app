@@ -232,7 +232,8 @@ def make_evaluation_graphic(data, model_name, data_dict):
     data_statistics_dict = {
         "account": data_dict["account"],
         "use_model_name": model_name,
-        "artifact": "target_limits.json"
+        "artifact": "target_limits.json",
+        "staging": "Staging"
     }
 
     response = dataclient.Backendclient.execute_post(

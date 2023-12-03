@@ -361,6 +361,7 @@ def get_model_metrics(model_selected, data_dict):
                 "use_model_name": model_selected,
                 # "staging": "Staging"
                 "artifact": artifact_value,
+                "staging": "Staging"
             }
 
         response = dataclient.Backendclient.execute_post(
@@ -425,7 +426,8 @@ def make_validation_graphic(model_name, plot_mode, data_dict):
                 "subcontainer": data_dict["subcontainer"],
                 "file_name": data_dict["file_name"],
                 "account": data_dict["account"],
-                "use_model_name": model_name
+                "use_model_name": model_name,
+                "staging": "Staging"
             }
 
             # print(f"data_statistics_dict: {data_statistics_dict}")

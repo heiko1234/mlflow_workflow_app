@@ -61,10 +61,14 @@ app = Dash(
     __name__,
     server = server,
     url_base_pathname="/aimate/",
-    use_pages=True
+    use_pages=True,
+    suprress_callback_exceptions=False,
+    long_callback_manager=long_callback_manager,
     )
 
+
 app.title = "MLFlow App"
+app._favicon = "ai1.png"
 
 
 
