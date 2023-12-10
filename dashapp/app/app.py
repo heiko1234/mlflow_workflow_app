@@ -62,7 +62,7 @@ app = Dash(
     server = server,
     url_base_pathname="/aimate/",
     use_pages=True,
-    suprress_callback_exceptions=False,
+    # suprress_callback_exceptions=False,
     long_callback_manager=long_callback_manager,
     )
 

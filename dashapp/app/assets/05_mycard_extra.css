@@ -1,0 +1,95 @@
+
+
+
+.myCard{
+    background-color: transparent;
+    width: 190px;
+    height: 250px;
+    perspective: 1000px;
+}
+
+.myCard_front_title .myCard_back_title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    text-align: center;
+    color: white;
+    margin: 0;
+    margin-top: 1rem;
+}
+
+
+
+
+.myCard_inner{
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.8s;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.myCard:hover .myCard_inner{
+    transform: rotateY(180deg);
+}
+
+.myCard_front, .myCard_back{
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border: 1px solid rgb(255, 255, 255);
+    border-radius: 1rem;
+    color: white;
+    box-shadow: 0 0 0.3em rgb(100, 100, 94);
+    font-weight: 700;
+}
+
+
+.myCard_front, .myCard_front::before{
+    background: linear-gradient(43deg, rgb(65, 65, 200) 0%, rgb(200, 80, 192) 46%, rgb(225, 204, 111) 100%)
+}
+
+
+.myCard_back, .myCard_back::before{
+    background: linear-gradient(43deg, rgb(1, 1, 163) 0%, rgb(111, 225, 172) 100%)
+}
+
+
+.myCard_back {
+    transform: rotateY(180deg);
+}
+
+
+.myCard_front::before, .myCard_back::after{
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    content: "";
+    width: 105%;
+    height: 105%;
+    position: absolute;
+    z-index: -1;
+    border-radius: 1em;
+    filter: blur(20px);
+    animation: animate 5s linear infinite;
+}
+
+@keyframes animate{
+    0%{
+        opacity: 0.3;;
+    }
+    80%{
+        opacity: 1;
+    }
+    100%{
+        opacity: 0.3;
+    }
+}
+
