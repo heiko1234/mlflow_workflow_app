@@ -2569,6 +2569,26 @@ files = [
 ]
 
 [[package]]
+name = "pygal"
+version = "3.0.4"
+description = "A Python svg graph plotting library"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "pygal-3.0.4-py2.py3-none-any.whl", hash = "sha256:e931caf08b4be0e6ec119a4c0e20dbed2d77829c641b7dea0ed21fe6ec81f2ea"},
+    {file = "pygal-3.0.4.tar.gz", hash = "sha256:6c5da33f1041e8b30cbc980f8a34910d9edc584b833240298f6a25df65425289"},
+]
+
+[package.dependencies]
+importlib-metadata = "*"
+
+[package.extras]
+docs = ["pygal-sphinx-directives", "sphinx", "sphinx-rtd-theme"]
+lxml = ["lxml"]
+png = ["cairosvg"]
+test = ["cairosvg", "coveralls", "flake8", "flask", "lxml", "pygal-maps-ch", "pygal-maps-fr", "pygal-maps-world", "pyquery", "pytest", "pytest-cov", "pytest-isort", "pytest-runner"]
+
+[[package]]
 name = "pyjwt"
 version = "2.8.0"
 description = "JSON Web Token implementation in Python"
@@ -3316,4 +3336,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">3.10.10,<3.11"
-content-hash = "b556848545ba1c78ef6220ea172128f7e313df0a292f3d336e42b3dc0b98c15c"
+content-hash = "6c8a84448b0655f3fa7af69009b1300f3e9ba6cfed1383e33b90593d2676e54a"

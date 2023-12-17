@@ -41,7 +41,8 @@ layout = html.Div(
                                     # back
                                     children=[
                                         html.P(className="myCard_back_title", children=["Title"]),
-                                        html.P("Leave Me")
+                                        html.P("Leave Me"),
+                                        html.P("I am the back side of the card. i am a vey long text. so do not blame me for testing the layout.", style={"margin": "10px"})
                                     ]
                                 )
                             ]
